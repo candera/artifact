@@ -1,6 +1,9 @@
 (ns artifact.core
   (:use [ring.adapter.jetty :only (run-jetty)]
+	[compojure.core]
 	[clojure.contrib.prxml :only (prxml *prxml-indent* *html-compatible*)])
+  (:require [compojure.route :as route]
+	    [compojure.handler :as handler])
   (:gen-class))
 
 (defn- to-html-str [content]
@@ -15,12 +18,19 @@
    [:head
     [:title "Artifact (Pre-Alpha)"]]
    [:body
-    "Welcome to artifact! Actual functionality still under development."]])
+    [:p "Welcome to artifact! Actual functionality still under development."]
+    [:form {:action "/api/join" :method "post"}
+     "Name:"
+     [:input {:type "text" :name "name"}]
+     [:input {:type "submit" :value "Join"}]]]])
 
-(defn- app [req]
-  {:status 200
-   :headers {"Content-Type" "text/html"}
-   :body (to-html-str index)})
+(defroutes main-routes
+  (GET "/" [] (to-html-str index))
+  (route/resources "/")
+  (route/not-found "Page not found"))
+
+(def app
+  (handler/site main-routes))
 
 (defn -main [& args]
   (run-jetty app {:port 8080}))
