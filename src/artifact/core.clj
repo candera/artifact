@@ -2,7 +2,8 @@
   (:use [ring.adapter.jetty :only (run-jetty)]
 	[ring.util.response :only (response)]
 	[compojure.core]
-	[clojure.contrib.prxml :only (prxml *prxml-indent* *html-compatible*)])
+	[clojure.contrib.prxml :only (prxml *prxml-indent* *html-compatible*)]
+	[artifact.triplestore])
   (:require [compojure.route :as route]
 	    [compojure.handler :as handler])
   (:gen-class))
@@ -35,7 +36,7 @@
    [:p "Raw: " (str (:params req))]])
 
 (defn- next-player-id []
-  (let [player-ids (set (get-triple "game" "players"))]
+  (let [player-ids (set (get-triple-value "game" "players"))]
     (first
      (filter 
       #(not (player-ids %))
@@ -43,7 +44,7 @@
 
 (defn- state-url [id]
   (str "/api?time="
-       (get-triple-value "game" "time")
+       (get-triple-value time-key)
        "&token="
        (get-triple-value id "token")))
 

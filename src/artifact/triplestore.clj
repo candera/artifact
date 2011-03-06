@@ -7,6 +7,7 @@
 ;;    { [entity att] val } ]  ; Moment 1
 ;;;  etc
 ;;; ]
+;;; TODO: Might need to make this a ref just to support multiple consistent reads
 (def ^{:private true} triplestore (atom []))
 
 (defn- triples-to-map [triples]
@@ -14,7 +15,8 @@
 	  {}
 	  triples))
 
-(def ^{:private true} time-key ["global" "time"])
+(def ^{:doc "A key that can be passed to get-triple-value to retrieve the current time."}
+  time-key ["global" "time"])
 
 (defn latest-time [triplestore]
   (get (last triplestore) time-key -1))
@@ -34,9 +36,12 @@
 (defn add-triples [& triples]
   (swap! triplestore conj-new-moment triples))
 
-(defn get-triple-value [entity att]
-  (some
-   identity
-   (map
-    #(get % [entity att])
-    (rseq @triplestore))))
+(defn get-triple-value
+  "Returns the value of attribute 'att' for entity 'entity' from the
+triplestore. Can accept the entity and attribute either as two args or
+as a single vector pair."
+  ([[entity att]] (get-triple-value entity att))
+  ([entity att]
+     (some identity (map
+		     #(get % [entity att])
+		     (rseq @triplestore)))))
