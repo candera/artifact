@@ -34,16 +34,41 @@
     (map (fn [[k v]] [:tr [:td (str k)] [:td (str v)]]) (:params req))]
    [:p "Raw: " (str (:params req))]])
 
+(defn- next-player-id []
+  (let [player-ids (set (get-triple "game" "players"))]
+    (first
+     (filter 
+      #(not (player-ids %))
+      (map #(str "player" %) (iterate inc 1))))))
+
+(defn- state-url [id]
+  (str "/api?time="
+       (get-triple-value "game" "time")
+       "&token="
+       (get-triple-value id "token")))
+
+(defn- add-player [name]
+  (let [token (str (rand-int 1000000000))
+	id (next-player-id)]
+    (add-triples
+     [id "self" true]
+     [id "name" name]
+     [id "state-url" (state-url id)])))
+
 (defn- game-page [req]
-  (response
-   (to-html-str
-    [:html
-     [:head
-      [:title "Artifact (Pre-Alpha)"]
-      [:body
-       [:p "You have joined, "
-	(get (:params req) :name "<No name>")]
-       (request-dump req)]]])))
+  (let [player-name (:name (:params req))
+	player-id (add-player )]
+    (response
+     (to-html-str
+      [:html
+       [:head
+	[:title "Artifact (Pre-Alpha)"]
+	[:script {:language "javascript"}
+	 (get-triple-value player-id "state-url")]
+	[:body
+	 [:p "You have joined, "
+	  (or player-name "<No name>")]
+	 (request-dump req)]]]))))
 
 (defroutes main-routes
   (GET "/" [] (to-html-str index))
