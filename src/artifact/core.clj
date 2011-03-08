@@ -58,7 +58,7 @@
 
 (defn- game-page [req]
   (let [player-name (:name (:params req))
-	player-id (add-player )]
+	player-id (add-player player-name)]
     (response
      (to-html-str
       [:html
