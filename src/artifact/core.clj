@@ -42,11 +42,15 @@
       #(not (player-ids %))
       (map #(str "player" %) (iterate inc 1))))))
 
-(defn- state-url [id]
-  (str "/api?time="
-       (get-triple-value time-key)
-       "&token="
-       (get-triple-value id "token")))
+(defn- state-url
+  "Retrieve the URL that the client can use to get state updates. If
+no time is provided, defaults to current moment. Pass -1 to get all
+state for all moments."
+  ([id] (state-url (get-triple-value time-key)))
+  ([id time] (str "/api?since="
+		  time
+		  "&token="
+		  (get-triple-value id "token"))))
 
 (defn- add-player [name]
   (let [token (str (rand-int 1000000000))
@@ -54,7 +58,9 @@
     (add-triples
      [id "self" true]
      [id "name" name]
-     [id "state-url" (state-url id)])))
+     [id "token" token]
+     [id "state-url" (state-url id -1)])
+    id))
 
 (defn- game-page [req]
   (let [player-name (:name (:params req))
@@ -65,7 +71,10 @@
        [:head
 	[:title "Artifact (Pre-Alpha)"]
 	[:script {:language "javascript"}
-	 (get-triple-value player-id "state-url")]
+	 [:raw! (str "var gameState='"
+		(get-triple-value player-id "state-url")
+		"';")]]
+	[:script {:language "javascript" :src "script/game.js"}]
 	[:body
 	 [:p "You have joined, "
 	  (or player-name "<No name>")]
