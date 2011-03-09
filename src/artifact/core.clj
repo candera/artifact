@@ -71,6 +71,7 @@ state for all moments."
       [:html
        [:head
 	[:title "Artifact (Pre-Alpha)"]
+	[:link {:rel "stylesheet" :type "text/css" :href "styles/game.css"}]
 	[:script
 	 [:raw! (str "var gameState='"
 		     (get-triple-value player-id "state-url")
