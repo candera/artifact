@@ -1,1 +1,3 @@
-// This is a test.
+function updateGameState () {
+    document.getElementById("gameState").innerText = "TODO: update!";
+}

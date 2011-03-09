@@ -29,11 +29,12 @@
 
 (defn- request-dump [req]
   [:div {:class "request-dump"}
-   [:p "Params :"]
+   [:h4 "Diagnostic info (request dump)"]
+   [:p "Request Parameters :"]
    [:table
     [:tr [:th "Name"] [:th "Value"]]
     (map (fn [[k v]] [:tr [:td (str k)] [:td (str v)]]) (:params req))]
-   [:p "Raw: " (str (:params req))]])
+   [:p "Raw request map: " (str (:params req))]])
 
 (defn- next-player-id []
   (let [player-ids (set (get-triple-value "game" "players"))]
@@ -82,6 +83,9 @@ state for all moments."
        [:body
 	[:p "You have joined, "
 	 (or player-name "<No name>")]
+	[:button {:onclick "updateGameState()"} "Update game state"]
+	[:textarea {:id "gameState" :readonly "readonly"}
+	 "game state will go here"]
 	(request-dump req)]]))))
 
 (defroutes main-routes
