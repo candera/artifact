@@ -8,11 +8,11 @@
 	    [compojure.handler :as handler])
   (:gen-class))
 
-(defn- to-html-str [content]
+(defn- to-html-str [& content]
   (binding [*prxml-indent* 2
 	    *html-compatible* true
 	    *out* (java.io.StringWriter.)]
-    (prxml content)
+    (doseq [e content] (prxml e))
     (.toString *out*)))
 
 (def ^{:private true} index
@@ -67,18 +67,21 @@ state for all moments."
 	player-id (add-player player-name)]
     (response
      (to-html-str
+      [:doctype! "html"]
       [:html
        [:head
 	[:title "Artifact (Pre-Alpha)"]
-	[:script {:language "javascript"}
+	[:script
 	 [:raw! (str "var gameState='"
-		(get-triple-value player-id "state-url")
-		"';")]]
-	[:script {:language "javascript" :src "script/game.js"}]
-	[:body
-	 [:p "You have joined, "
-	  (or player-name "<No name>")]
-	 (request-dump req)]]]))))
+		     (get-triple-value player-id "state-url")
+		     "';")]]
+	;; Empty string in script tag is to get the closing tag to
+	;; show up, since the validator complains otherwise.
+	[:script {:src "script/game.js"} ""]]
+       [:body
+	[:p "You have joined, "
+	 (or player-name "<No name>")]
+	(request-dump req)]]))))
 
 (defroutes main-routes
   (GET "/" [] (to-html-str index))
