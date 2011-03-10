@@ -73,12 +73,17 @@ state for all moments."
        [:head
 	[:title "Artifact (Pre-Alpha)"]
 	[:link {:rel "stylesheet" :type "text/css" :href "styles/game.css"}]
-	[:script
-	 [:raw! (str "var gameState='"
-		     (get-triple-value player-id "state-url")
-		     "';")]]
+
+	;; JQuery
 	;; Empty string in script tag is to get the closing tag to
 	;; show up, since the validator complains otherwise.
+	[:script {:src "http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"} ""]
+
+	[:script
+	 ;; Initial state for bootstrapping the game engine
+	 [:raw! (str "var gameStateUrl='"
+		     (get-triple-value player-id "state-url")
+		     "';")]]
 	[:script {:src "script/game.js"} ""]]
        [:body
 	[:p "You have joined, "
@@ -88,9 +93,15 @@ state for all moments."
 	 "game state will go here"]
 	(request-dump req)]]))))
 
+(defn- api [since token]
+  (str "Returning results for since=" since " and token=" token
+       ". Current time is " (get-triple-value time-key)))
+
 (defroutes main-routes
   (GET "/" [] (to-html-str index))
   (POST "/game" [] game-page)
+  ;; TODO: extract token validation into middleware?
+  (GET "/api" [since token] (api since token))
   (route/resources "/")
   (route/not-found "Page not found"))
 

@@ -1,3 +1,8 @@
 function updateGameState () {
-    document.getElementById("gameState").innerText = "TODO: update!";
+    $.get(
+	gameStateUrl,
+	{},
+	function (data) {
+	    document.getElementById("gameState").innerText = data;
+	});
 }
