@@ -8,6 +8,8 @@
 	    [compojure.handler :as handler])
   (:gen-class))
 
+(def ^{:private true :dynamic true} *store* (create-triplestore))
+
 (defn- to-html-str [& content]
   (binding [*prxml-indent* 2
 	    *html-compatible* true
@@ -37,7 +39,7 @@
    [:p "Raw request map: " (str (:params req))]])
 
 (defn- next-player-id []
-  (let [player-ids (set (get-triple-value "game" "players"))]
+  (let [player-ids (set (get-triple-value *store* "game" "players"))]
     (first
      (filter 
       #(not (player-ids %))
@@ -47,16 +49,16 @@
   "Retrieve the URL that the client can use to get state updates. If
 no time is provided, defaults to current moment. Pass -1 to get all
 state for all moments."
-  ([id] (state-url (get-triple-value time-key)))
+  ([id] (state-url (get-triple-value *store* time-key)))
   ([id time] (str "/api?since="
 		  time
 		  "&token="
-		  (get-triple-value id "token"))))
+		  (get-triple-value *store* id "token"))))
 
 (defn- add-player [name]
   (let [token (str (rand-int 1000000000))
 	id (next-player-id)]
-    (add-triples
+    (add-triples *store*
      [id "self" true]
      [id "name" name]
      [id "token" token]
@@ -82,7 +84,7 @@ state for all moments."
 	[:script
 	 ;; Initial state for bootstrapping the game engine
 	 [:raw! (str "var gameStateUrl='"
-		     (get-triple-value player-id "state-url")
+		     (get-triple-value *store* player-id "state-url")
 		     "';")]]
 	[:script {:src "script/game.js"} ""]]
        [:body
@@ -94,8 +96,7 @@ state for all moments."
 	(request-dump req)]]))))
 
 (defn- api [since token]
-  (str "Returning results for since=" since " and token=" token
-       ". Current time is " (get-triple-value time-key)))
+  (str (get-all-triples *store*)))
 
 (defroutes main-routes
   (GET "/" [] (to-html-str index))
