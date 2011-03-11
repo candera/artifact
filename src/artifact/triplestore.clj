@@ -92,3 +92,18 @@ as a single vector pair."
   an entity of foo and a value of bar, regardless of attribute."
   [store & triplespecs]
   (filter (build-specs-filter triplespecs) (get-all-triples store)))
+
+(defn value
+  "Given a triple, return the value"
+  [triple]
+  (second triple))
+
+(defn entity
+  "Given a triple, return the entity"
+  [triple]
+  (first (first triple)))
+
+(defn attribute
+  "Given a triple, return the attribute"
+  [triple]
+  (second (first triple)))
