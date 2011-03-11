@@ -1,5 +1,7 @@
 var gameState = [];
 
+$(document).everyTime(500, updateGameState);
+
 function mergeGameState (data, status, jqXHR) {
     var str = "";
     for (var i = 0; i < data.length; ++i)

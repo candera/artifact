@@ -55,10 +55,11 @@ game."
        [:title "Artifact (Pre-Alpha)"]
        [:link {:rel "stylesheet" :type "text/css" :href "/styles/game.css"}]
 
-       ;; JQuery
+       ;; JQuery and related plugins
        ;; Empty string in script tag is to get the closing tag to
        ;; show up, since the validator complains otherwise.
        [:script {:src "http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"} ""]
+       [:script {:src "/script/jquery.timers-1.2.js"} ""]
 
        [:script
 	;; URL for retrieving game state
@@ -67,8 +68,8 @@ game."
       [:body
        [:p "You have joined, "
 	(or player-name "<No name>")]
-       [:button {:onclick "updateGameState()"} "Update game state"]
-       [:textarea {:id "gameState" :readonly "readonly"}
+       [:button {:onclick "updateGameState()"} "Update game state now"]
+       [:textarea {:id "gameState" :readonly "readonly" :rows 20}
 	"game state will go here"]]]))))
 
 (defn join-page [req]
