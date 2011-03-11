@@ -36,8 +36,13 @@
 (defn reset-triplestore [store]
   (reset! store []))
 
-(defn add-triples [store & triples]
-  (swap! store conj-new-moment triples))
+(defn add-triples
+  "Given a store and zero or more triples of the form [entity att val],
+  creates a new moment and updates the store with the specified
+  triples. As a convenience, a triple may be nil, in which case it is
+  ignored."
+  [store & triples]
+  (swap! store conj-new-moment (filter identity triples)))
 
 (defn get-triple-value
   "Returns the value of attribute 'att' for entity 'entity' from the
@@ -53,11 +58,19 @@ as a single vector pair."
   (reduce merge @store))
 
 (defn- build-filter
-  "Given a template (either * or a literal value), return a predicate
-  that will return true if either the template is * or the parameter
-  matches the template exactly."
+  "Given a template (either ending with a * or a literal value),
+  return a predicate that will return true if either the template is *
+  or the parameter matches the template exactly."
   [t]
-  (fn [v] (or (= t "*") (= t v))))
+  (cond
+   (= t "*")
+   (constantly true)
+
+   (.endsWith t "*")
+   #(.startsWith % (.substring t 0 (dec (count t))))
+
+   true
+   #(= t %)))
 
 (defn- build-spec-filter
   "Given a single triplespec (see query) build a predicate that will
@@ -79,10 +92,22 @@ as a single vector pair."
 (defn query
   "Given a store and a triple template, return all triples that match
   the pattern. The pattern can contain either exact matches or
-  wildcards (a literal '*' string), which match any item. So, for
-  example, (query store [\"*\" \"*\" \"*\"]) return all triples, and
-  (query store [\"foo\" \"*\" \"bar\"]) returns all triples that have
-  an entity of foo and a value of bar, regardless of attribute."
+  wildcards (a prefix string followed by a literal '*'), which matches
+  any item starting with the prefix. So, for example:
+
+  (query store [\"*\" \"*\" \"*\"])
+
+  returns all triples, and
+
+  (query store [\"foo\" \"*\" \"bar\"])
+
+  returns all triples that have an entity of foo and a value of bar,
+  regardless of attribute, and
+
+  (query store [\"player:*\" \"name\" \"*\"
+
+  returns all triples that have an entity that starts with \"player:\"
+  and have an attribute of \"name\"."
   [store & triplespecs]
   (filter (build-specs-filter triplespecs) (get-all-triples store)))
 
