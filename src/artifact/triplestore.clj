@@ -58,3 +58,37 @@ as a single vector pair."
   [triple]
   (let [[[entity att] val] triple]
     [entity att val]))
+
+(defn- build-filter
+  "Given a template (either * or a literal value), return a predicate
+  that will return true if either the template is * or the parameter
+  matches the template exactly."
+  [t]
+  (fn [v] (or (= t "*") (= t v))))
+
+(defn- build-spec-filter
+  "Given a single triplespec (see query) build a predicate that will
+  return true for aany tuple that matches the spec."
+  [triplespec]
+  (let [[e-spec a-spec v-spec] triplespec]
+    (fn [[[e a] v]]
+      (and ((build-filter e-spec) e)
+	   ((build-filter a-spec) a)
+	   ((build-filter v-spec) v)))))
+
+(defn- build-specs-filter
+  "Given a sequence of triplespecs (see query), build a predicate that
+  will return true for any triple that matches at least one
+  triplespec."
+  [triplespecs]
+  (apply comp (map build-spec-filter triplespecs)))
+
+(defn query
+  "Given a store and a triple template, return all triples that match
+  the pattern. The pattern can contain either exact matches or
+  wildcards (a literal '*' string), which match any item. So, for
+  example, (query store [\"*\" \"*\" \"*\"]) return all triples, and
+  (query store [\"foo\" \"*\" \"bar\"]) returns all triples that have
+  an entity of foo and a value of bar, regardless of attribute."
+  [store & triplespecs]
+  (filter (build-specs-filter triplespecs) (get-all-triples store)))
