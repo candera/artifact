@@ -7,10 +7,9 @@ function mergeGameState (data, status, jqXHR) {
 	str += data[i] + "\n";
     }
     document.getElementById("gameState").innerText = str;
+    gameState = data;
 }
 
 function updateGameState () {
-    // TODO: Change this so it uses the game state URL from the 
-    // local triplestore if available, and the initial one otherwise
-    $.getJSON(initialGameStateUrl, {}, mergeGameState);
+    $.getJSON(gameStateUrl, {}, mergeGameState);
 }

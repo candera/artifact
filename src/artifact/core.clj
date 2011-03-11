@@ -47,18 +47,23 @@
       (map #(str "player:" %) (iterate inc 1))))))
 
 (defn- state-url
-  "Retrieve the URL that the client can use to get state updates since
-the specified time. Pass -1 to get state since the beginning."
-  ([token time] (str "/api?since=" time "&token=" token)))
+  "Retrieve the URL that the client can use to get the state of the
+game."
+  ([token] (str "/api?&token=" token)))
 
-(defn- add-player [name]
+(defn- players
+  "Given a store, returns a sequence of players in that store."
+  [store]
+  (or (get-triple-value store "game" "players") []))
+
+(defn- add-player [store name]
   (let [token (str (rand-int 1000000000))
 	id (next-player-id)]
-    (add-triples *store*
+    (add-triples store
      [id "self" true]
      [id "name" name]
      [id "token" token]
-     [id "state-url" (state-url token -1)])
+     ["game" "players" (conj (players store) id)])
     id))
 
 (defn- lookup-player
@@ -95,10 +100,8 @@ the specified time. Pass -1 to get state since the beginning."
        [:script {:src "http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"} ""]
 
        [:script
-	;; Initial state for bootstrapping the game engine
-	[:raw! (str "var initialGameStateUrl='"
-		    (get-triple-value *store* player-id "state-url")
-		    "';")]]
+	;; URL for retrieving game state
+	[:raw! (str "var gameStateUrl='" (state-url token) "';")]]
        [:script {:src "/script/game.js"} ""]]
       [:body
        [:p "You have joined, "
@@ -109,15 +112,21 @@ the specified time. Pass -1 to get state since the beginning."
 
 (defn- join-page [req]
   (let [player-name (:name (:params req))
-	player-id (add-player player-name)
+	player-id (add-player *store* player-name)
 	token (lookup-token player-id)]
     {:status 303
      :headers {"Location" (str "/game/" token)}}))
 
+(defn- hoist-key
+  "Takes a triple of the form [[e a] v] and turns it into [e a v]."
+  [triple]
+  (let [[[e a] v] triple]
+    [e a v]))
+
 (defn- api [since token]
   {:mime-type "application/json"
    :body (json-str
-	  (map flatten (get-all-triples *store*)))})
+	  (map hoist-key (get-all-triples *store*)))})
 
 (defroutes main-routes
   (GET "/" [] (to-html-str index))
