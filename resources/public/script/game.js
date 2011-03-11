@@ -10,5 +10,7 @@ function mergeGameState (data, status, jqXHR) {
 }
 
 function updateGameState () {
-    $.getJSON(gameStateUrl, {}, mergeGameState);
+    // TODO: Change this so it uses the game state URL from the 
+    // local triplestore if available, and the initial one otherwise
+    $.getJSON(initialGameStateUrl, {}, mergeGameState);
 }

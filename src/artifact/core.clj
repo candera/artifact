@@ -25,7 +25,7 @@
    [:body
     [:p "Welcome to artifact! Actual functionality still under development."]
     [:p "Join a game by entering your name here."]
-    [:form {:action "/game" :method "post"}
+    [:form {:action "/join" :method "post"}
      "Name:"
      [:input {:type "text" :name "name"}]
      [:input {:type "submit" :value "Join"}]]]])
@@ -44,17 +44,12 @@
     (first
      (filter 
       #(not (player-ids %))
-      (map #(str "player" %) (iterate inc 1))))))
+      (map #(str "player:" %) (iterate inc 1))))))
 
 (defn- state-url
-  "Retrieve the URL that the client can use to get state updates. If
-no time is provided, defaults to current moment. Pass -1 to get all
-state for all moments."
-  ([id] (state-url (get-triple-value *store* time-key)))
-  ([id time] (str "/api?since="
-		  time
-		  "&token="
-		  (get-triple-value *store* id "token"))))
+  "Retrieve the URL that the client can use to get state updates since
+the specified time. Pass -1 to get state since the beginning."
+  ([token time] (str "/api?since=" time "&token=" token)))
 
 (defn- add-player [name]
   (let [token (str (rand-int 1000000000))
@@ -63,47 +58,71 @@ state for all moments."
      [id "self" true]
      [id "name" name]
      [id "token" token]
-     [id "state-url" (state-url id -1)])
+     [id "state-url" (state-url token -1)])
     id))
 
-(defn- game-page [req]
+(defn- lookup-player
+  "Given a token, return a player id."
+  [token]
+  (->> (query *store* ["*" "token" token])
+       (first)
+       (entity)))
+
+(defn- lookup-token
+  "Given a player id, return the player's token"
+  [id]
+  (get-triple-value *store* id "token"))
+
+(defn- lookup-player-name
+  "Given a player id, return the player's name"
+  [id]
+  (get-triple-value *store* id "name"))
+
+(defn- game-page [token]
+  (let [player-id (lookup-player token)
+	player-name (lookup-player-name player-id)]
+   (response
+    (to-html-str
+     [:doctype! "html"]
+     [:html
+      [:head
+       [:title "Artifact (Pre-Alpha)"]
+       [:link {:rel "stylesheet" :type "text/css" :href "/styles/game.css"}]
+
+       ;; JQuery
+       ;; Empty string in script tag is to get the closing tag to
+       ;; show up, since the validator complains otherwise.
+       [:script {:src "http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"} ""]
+
+       [:script
+	;; Initial state for bootstrapping the game engine
+	[:raw! (str "var initialGameStateUrl='"
+		    (get-triple-value *store* player-id "state-url")
+		    "';")]]
+       [:script {:src "/script/game.js"} ""]]
+      [:body
+       [:p "You have joined, "
+	(or player-name "<No name>")]
+       [:button {:onclick "updateGameState()"} "Update game state"]
+       [:textarea {:id "gameState" :readonly "readonly"}
+	"game state will go here"]]]))))
+
+(defn- join-page [req]
   (let [player-name (:name (:params req))
-	player-id (add-player player-name)]
-    (response
-     (to-html-str
-      [:doctype! "html"]
-      [:html
-       [:head
-	[:title "Artifact (Pre-Alpha)"]
-	[:link {:rel "stylesheet" :type "text/css" :href "styles/game.css"}]
-
-	;; JQuery
-	;; Empty string in script tag is to get the closing tag to
-	;; show up, since the validator complains otherwise.
-	[:script {:src "http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"} ""]
-
-	[:script
-	 ;; Initial state for bootstrapping the game engine
-	 [:raw! (str "var gameStateUrl='"
-		     (get-triple-value *store* player-id "state-url")
-		     "';")]]
-	[:script {:src "script/game.js"} ""]]
-       [:body
-	[:p "You have joined, "
-	 (or player-name "<No name>")]
-	[:button {:onclick "updateGameState()"} "Update game state"]
-	[:textarea {:id "gameState" :readonly "readonly"}
-	 "game state will go here"]
-	(request-dump req)]]))))
+	player-id (add-player player-name)
+	token (lookup-token player-id)]
+    {:status 303
+     :headers {"Location" (str "/game/" token)}}))
 
 (defn- api [since token]
   {:mime-type "application/json"
    :body (json-str
-	  (map v (get-all-triples *store*)))})
+	  (map flatten (get-all-triples *store*)))})
 
 (defroutes main-routes
   (GET "/" [] (to-html-str index))
-  (POST "/game" [] game-page)
+  (POST "/join" [] join-page)
+  (GET "/game/:token" [token] (game-page token))
   ;; TODO: extract token validation into middleware?
   (GET "/api" [since token] (api since token))
   (route/resources "/")
