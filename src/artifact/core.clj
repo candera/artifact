@@ -3,6 +3,7 @@
 	[ring.util.response :only (response)]
 	[compojure.core]
 	[clojure.contrib.prxml :only (prxml *prxml-indent* *html-compatible*)]
+	[clojure.contrib.json :only (json-str)]
 	[artifact.triplestore])
   (:require [compojure.route :as route]
 	    [compojure.handler :as handler])
@@ -96,7 +97,9 @@ state for all moments."
 	(request-dump req)]]))))
 
 (defn- api [since token]
-  (str (get-all-triples *store*)))
+  {:mime-type "application/json"
+   :body (json-str
+	  (map v (get-all-triples *store*)))})
 
 (defroutes main-routes
   (GET "/" [] (to-html-str index))

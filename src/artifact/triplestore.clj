@@ -51,3 +51,10 @@ as a single vector pair."
 
 (defn get-all-triples [store]
   (reduce merge @store))
+
+(defn v
+  "Given a [[entity attribute] value] tuple returns a triple as a
+  [entity attribute value] vector."
+  [triple]
+  (let [[[entity att] val] triple]
+    [entity att val]))
