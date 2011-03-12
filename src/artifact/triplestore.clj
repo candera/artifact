@@ -72,7 +72,7 @@ as a single vector pair."
    true
    #(= t %)))
 
-(defn- build-spec-filter
+(defn build-spec-filter
   "Given a single triplespec (see query) build a predicate that will
   return true for aany tuple that matches the spec."
   [triplespec]
@@ -90,8 +90,8 @@ as a single vector pair."
   (apply comp (map build-spec-filter triplespecs)))
 
 (defn query
-  "Given a store and a triple template, return all triples that match
-  the pattern. The pattern can contain either exact matches or
+  "Given a store and a seq of triple template, return all triples that
+  match the pattern. The pattern can contain either exact matches or
   wildcards (a prefix string followed by a literal '*'), which matches
   any item starting with the prefix. So, for example:
 

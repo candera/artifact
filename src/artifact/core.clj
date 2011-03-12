@@ -1,8 +1,12 @@
 (ns artifact.core
   (:use [ring.adapter.jetty :only (run-jetty)]
-	[artifact.routes :only (main-routes)])
+	[artifact.routes :only (main-routes)]
+	[artifact.game :only (initialize-game)]
+	[artifact.state :only (*store*)])
   (:require [compojure.handler :as handler])
   (:gen-class))
+
+(initialize-game *store*)
 
 (def app
   (handler/site main-routes))

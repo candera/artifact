@@ -66,9 +66,11 @@ game."
 	[:raw! (str "var gameStateUrl='" (state-url token) "';")]]
        [:script {:src "/script/game.js"} ""]]
       [:body
-       [:p "You have joined, "
+       [:p "The following players have joined:"
 	(or player-name "<No name>")]
-       [:button {:onclick "updateGameState()"} "Update game state now"]
+       [:div {:id "joining-ui"}
+	"UI for joining up will be shown here."
+	[:table {:id "joined-players"}]]
        [:textarea {:id "gameState" :readonly "readonly" :rows 20}
 	"game state will go here"]]]))))
 
