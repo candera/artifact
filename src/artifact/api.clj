@@ -15,4 +15,4 @@
   (dosync
    {:mime-type "application/json"
     :body (json-str
-	   (map hoist-key (get-visible-triples *store* token)))}))
+	   (map hoist-key (sort (get-visible-triples *store* token))))}))
