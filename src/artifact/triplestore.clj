@@ -1,7 +1,5 @@
 (ns artifact.triplestore)
 
-(def ^{:private true} triplestore (atom []))
-
 ;;; Creates a new triple store, which internally is a vector of
 ;;; moments, each of which is a map that takes an entity and an
 ;;; attribute to a value. So like this:
@@ -10,8 +8,7 @@
 ;;    { [entity att] val } ]  ; Moment 1
 ;;;  etc
 ;;; ]
-;;; TODO: Might need to make this a ref just to support multiple consistent reads
-(defn create-triplestore [] (atom []))
+(defn create-triplestore [] (ref []))
 
 (defn- triples-to-map [triples]
   (reduce #(assoc %1 (subvec %2 0 2) (nth %2 2))
@@ -34,7 +31,7 @@
 	  (assoc (triples-to-map triples) time-key new-game-time))))
 
 (defn reset-triplestore [store]
-  (reset! store []))
+  (ref-set store []))
 
 (defn add-triples
   "Given a store and zero or more triples of the form [entity att val],
@@ -42,7 +39,7 @@
   triples. As a convenience, a triple may be nil, in which case it is
   ignored."
   [store & triples]
-  (swap! store conj-new-moment (filter identity triples)))
+  (alter store conj-new-moment (filter identity triples)))
 
 (defn get-triple-value
   "Returns the value of attribute 'att' for entity 'entity' from the

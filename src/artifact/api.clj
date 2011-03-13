@@ -12,6 +12,7 @@
     [e a v]))
 
 (defn api [since token]
-  {:mime-type "application/json"
-   :body (json-str
-	  (map hoist-key (get-visible-triples *store* token)))})
+  (dosync
+   {:mime-type "application/json"
+    :body (json-str
+	   (map hoist-key (get-visible-triples *store* token)))}))

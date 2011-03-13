@@ -45,41 +45,43 @@ game."
      [:input {:type "submit" :value "Join"}]]]])
 
 (defn game-page [token]
-  (let [player-id (lookup-player *store* token)
-	player-name (lookup-player-name *store* player-id)]
-   (response
-    (to-html-str
-     [:doctype! "html"]
-     [:html
-      [:head
-       [:title "Artifact (Pre-Alpha)"]
-       [:link {:rel "stylesheet" :type "text/css" :href "/styles/game.css"}]
+  (dosync
+   (let [player-id (lookup-player *store* token)
+	 player-name (lookup-player-name *store* player-id)]
+     (response
+      (to-html-str
+       [:doctype! "html"]
+       [:html
+	[:head
+	 [:title "Artifact (Pre-Alpha)"]
+	 [:link {:rel "stylesheet" :type "text/css" :href "/styles/game.css"}]
 
-       ;; JQuery and related plugins
-       ;; Empty string in script tag is to get the closing tag to
-       ;; show up, since the validator complains otherwise.
-       [:script {:src "http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"} ""]
-       [:script {:src "/script/jquery.timers-1.2.js"} ""]
+	 ;; JQuery and related plugins
+	 ;; Empty string in script tag is to get the closing tag to
+	 ;; show up, since the validator complains otherwise.
+	 [:script {:src "http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"} ""]
+	 [:script {:src "/script/jquery.timers-1.2.js"} ""]
 
-       [:script
-	;; URL for retrieving game state
-	[:raw! (str "var gameStateUrl='" (state-url token) "';")]]
-       [:script {:src "/script/game.js"} ""]]
-      [:body
-       [:p "The following players have joined:"
-	(or player-name "<No name>")]
-       [:div {:id "joining-ui"}
-	"UI for joining up will be shown here."
-	[:table {:id "joined-players"}]]
-       [:textarea {:id "gameState" :readonly "readonly" :rows 20}
-	"game state will go here"]]]))))
+	 [:script
+	  ;; URL for retrieving game state
+	  [:raw! (str "var gameStateUrl='" (state-url token) "';")]]
+	 [:script {:src "/script/game.js"} ""]]
+	[:body
+	 [:p "The following players have joined:"
+	  (or player-name "<No name>")]
+	 [:div {:id "joining-ui"}
+	  "UI for joining up will be shown here."
+	  [:table {:id "joined-players"}]]
+	 [:textarea {:id "gameState" :readonly "readonly" :rows 20}
+	  "game state will go here"]]])))))
 
 (defn join-page [req]
-  (let [player-name (:name (:params req))
-	player-id (add-player *store* player-name)
-	token (lookup-token *store* player-id)]
-    {:status 303
-     :headers {"Location" (str "/game/" token)}}))
+  (dosync
+   (let [player-name (:name (:params req))
+	 player-id (add-player *store* player-name)
+	 token (lookup-token *store* player-id)]
+     {:status 303
+      :headers {"Location" (str "/game/" token)}})))
 
 
 
