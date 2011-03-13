@@ -5,4 +5,8 @@
 		 [ring/ring-jetty-adapter "0.3.7"]
 		 [compojure "0.6.1"]]
   :dev-dependencies [[swank-clojure "1.2.0"]]
-  :main artifact.core)
+  :main artifact.core
+  ;; This next option has to do with Clojure bug #322. Something
+  ;; about transitive AOT results in not enough going into the
+  ;; uberjar, which means it won't run.
+  :keep-non-project-classes true)
