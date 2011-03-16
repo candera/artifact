@@ -8,7 +8,9 @@ function displayGameState(state) {
     {
 	str += gameState[i] + "\n";
     }
-    $("#gameState").text(str);
+    if (str != $("#gameState").text()) {
+	$("#gameState").text(str);
+    }
 }
 
 function getTripleValue(store, entity, att){
