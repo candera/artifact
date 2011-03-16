@@ -68,9 +68,10 @@ game."
 	 [:script {:src "/script/game.js"} ""]]
 	[:body
 	 [:div {:id "joining-ui"}
-	  [:table {:id "joined-players"}]]
+	  [:table {:id "joined-players"}
+	   [:tr [:th "Player"] [:th "State"]] ""]]
 	 [:textarea {:id "gameState" :readonly "readonly" :rows 20}
-	  "game state will go here"]]])))))
+	  "diagnostic information is displayed here"]]])))))
 
 (defn join-page [req]
   (dosync

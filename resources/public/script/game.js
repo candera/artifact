@@ -67,13 +67,16 @@ function mergeGameState (newState, status, jqXHR) {
     for (var i = 0; i < additions.length; ++i) {
 	var addition = additions[i];
 
-	// $("#joined-players").find("tr td :contains" + 
-	// 			    getTripleValue(newState, player, "name") +
-	// 			    "</td><td>" + 
-	// 			    getTripleValue(newState, player, "ready") ? 
-	// 			    "Ready" : "Not Ready" + 
-	// 			    "</td></tr>"); 
+	$("#joined-players").append("<tr player-id='" + addition + "'><td>" + 
+				    getTripleValue(newState, addition, "name") + 
+				    "</td><td>Button</td></tr>");
     }
+
+    // for (var i = 0; i < deletions.length: ++i) {
+    // 	var deletion = deletions[i];
+
+    // 	// TODO: Delete row
+    // }
 
     gameState = newState;
 }
