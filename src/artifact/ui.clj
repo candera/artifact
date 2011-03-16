@@ -36,10 +36,10 @@ game."
   [:html
    [:head
     [:title "Artifact (Pre-Alpha)"]]
-   [:body
+   [:body {:onload "document.join.name.focus()"}
     [:p "Welcome to artifact! Actual functionality still under development."]
     [:p "Join a game by entering your name here."]
-    [:form {:action "/join" :method "post"}
+    [:form {:action "/join" :method "post" :name "join"}
      "Name:"
      [:input {:type "text" :name "name"}]
      [:input {:type "submit" :value "Join"}]]]])
