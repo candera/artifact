@@ -66,15 +66,26 @@ function mergeGameState (newState, status, jqXHR) {
 
     for (var i = 0; i < additions.length; ++i) {
 	var addition = additions[i];
+	
+	var name = getTripleValue(newState, addition, "name");
 
-	$("#joined-players").append("<tr player-id='" + addition + "'><td>" + 
-				    getTripleValue(newState, addition, "name") + 
-				    "</td><td>Button</td></tr>");
+	$("#joined-players")
+	    .append(
+		$("<tr>")
+		    .attr("player-id", addition)
+		    .append($("<td>").text(name))
+		    .append($("<td>").text("Button goes here")));
     }
+
+    // We don't even have a mechanism in the game for players to
+    // leave, so it doesn't make sense to process deletions. I suppose
+    // we could track how often they've hit the API endpoint and
+    // remove them, but it's not clear how the game would proceed at
+    // that point. Problem for later, I guess.
 
     // for (var i = 0; i < deletions.length: ++i) {
     // 	var deletion = deletions[i];
-
+    //
     // 	// TODO: Delete row
     // }
 
