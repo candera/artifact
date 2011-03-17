@@ -10,6 +10,7 @@
   (POST "/join" [] join-page)
   ;; TODO: extract token validation into middleware?
   (GET "/game/:token" [token] (game-page token))
-  (GET "/api" [since token] (api since token))
+  (GET "/api" [token] (api-get token))
+  (POST "/api" [token] (fn [req] (api-post token (slurp (:body req)))))
   (route/resources "/")
   (route/not-found "Page not found"))

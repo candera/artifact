@@ -9,3 +9,13 @@
     display: block;
     width: 100%
 }
+
+#joined-players .self 
+{
+    font-weight: bold;
+}
+
+#joined-players .other
+{
+    font-style: italic;
+}

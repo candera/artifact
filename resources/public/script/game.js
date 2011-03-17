@@ -51,6 +51,30 @@ function diff(before, after) {
     return diff;
 }
 
+function postTriple(e, a, v) {
+    $.post(gameStateUrl, JSON.stringify([[e, a, v]])); 
+}
+
+function readyButtonCell(state, player, self) {
+    var cell = $("<td>");
+
+    if (getTripleValue(state, player, "ready")) {
+	cell.text("Ready");
+    }
+    else if (self) {
+	cell.append(
+	    $("<button>").text("Start game")
+		.click(function () {
+		    postTriple(player, "ready", "true");
+		}));
+    }
+    else {
+	cell.text("Not ready");
+    }
+
+    return cell; 
+}
+
 function mergeGameState (newState, status, jqXHR) {
     displayGameState(newState); 
     
@@ -68,13 +92,15 @@ function mergeGameState (newState, status, jqXHR) {
 	var addition = additions[i];
 	
 	var name = getTripleValue(newState, addition, "name");
+	var self = getTripleValue(newState, addition, "self");
 
 	$("#joined-players")
 	    .append(
 		$("<tr>")
 		    .attr("player-id", addition)
+		    .addClass(self ? "self" : "other")
 		    .append($("<td>").text(name))
-		    .append($("<td>").text("Button goes here")));
+		    .append(readyButtonCell(newState, addition, self)));
     }
 
     // We don't even have a mechanism in the game for players to
