@@ -1,5 +1,6 @@
 (ns artifact.core
   (:use [ring.adapter.jetty :only (run-jetty)]
+	[ring.middleware.json-params]
 	[artifact.routes :only (main-routes)]
 	[artifact.game :only (initialize-game)]
 	[artifact.state :only (*store*)])
@@ -8,8 +9,13 @@
 
 (initialize-game *store*)
 
+;; (def app
+;;   (handler/site main-routes))
+
 (def app
-  (handler/site main-routes))
+  (-> main-routes
+      wrap-json-params
+      wrap-params))
 
 (defn -main [& args]
   (run-jetty app {:port 8080}))
