@@ -61,15 +61,22 @@ function postTriple(e, a, v) {
 
 function readyButtonCell(state, player, self) {
     var cell = $("<td>");
+    cell.attr("player", player);
 
-    if (getTripleValue(state, player, "ready")) {
+    var ready = getTripleValue(state, player, "ready");
+
+    if (ready) {
 	cell.text("Ready");
     }
     else if (self) {
+	var button = $("<button>");
 	cell.append(
-	    $("<button>").text("Start game")
+	    button.text("Start game")
 		.click(function () {
-		    postTriple(player, "ready", "true");
+		    postTriple(player, "ready", true);
+		    button.remove();
+		    cell.attr("state", "ready");
+		    cell.text("Ready");
 		}));
     }
     else {
@@ -103,7 +110,7 @@ function mergeGameState (newState, status, jqXHR) {
 		$("<tr>")
 		    .attr("player-id", addition)
 		    .addClass(self ? "self" : "other")
-		    .append($("<td>").text(name))
+		    .append($("<td>").text(name + (self ? " (you)" : "")))
 		    .append(readyButtonCell(newState, addition, self)));
     }
 
