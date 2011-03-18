@@ -3,6 +3,8 @@
   :dependencies [[org.clojure/clojure "1.2.0"]
                  [org.clojure/clojure-contrib "1.2.0"]
 		 [ring/ring-jetty-adapter "0.3.7"]
+		 [ring-json-params "0.1.3"]
+		 [ring-core "0.3.7"]
 		 [compojure "0.6.1"]]
   :dev-dependencies [[swank-clojure "1.2.0"]]
   :main artifact.core

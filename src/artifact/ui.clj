@@ -21,7 +21,7 @@
 (defn- state-url
   "Retrieve the URL that the client can use to get the state of the
 game."
-  ([token] (str "/api?&token=" token)))
+  ([token] (str "/api?token=" token)))
 
 (defn to-html-str [& content]
   (binding [*prxml-indent* 2
@@ -73,10 +73,9 @@ game."
 	 [:textarea {:id "gameState" :readonly "readonly" :rows 20}
 	  "diagnostic information is displayed here"]]])))))
 
-(defn join-page [req]
+(defn join-page [player-name]
   (dosync
-   (let [player-name (:name (:params req))
-	 player-id (add-player *store* player-name)
+   (let [player-id (add-player *store* player-name)
 	 token (lookup-token *store* player-id)]
      {:status 303
       :headers {"Location" (str "/game/" token)}})))

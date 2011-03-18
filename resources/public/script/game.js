@@ -52,7 +52,11 @@ function diff(before, after) {
 }
 
 function postTriple(e, a, v) {
-    $.post(gameStateUrl, JSON.stringify([[e, a, v]])); 
+    $.ajax(gameStateUrl, 
+	   {contentType: "application/json", 
+	    data: JSON.stringify([[e, a, v]]),
+	    processData: false,
+	    type: "POST"}); 
 }
 
 function readyButtonCell(state, player, self) {
