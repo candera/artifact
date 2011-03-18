@@ -47,8 +47,6 @@
      [id "token" token]
      [id "ready" false]
      [id "available-actions" [id "ready" true]]
-     (when-not (get-triple-value store "game" "phase")
-       ["game" "phase" :setup])
      ["game" "players" (conj (players store) id)])
     id))
 
@@ -63,7 +61,8 @@
 
 (defn initialize-game
   "Sets up a game with the data it needs in order to bootstrap."
-  [store])
+  [store]
+  (add-triples store ["game" "phase" :setup]))
 
 (defn- rule-visibility
   "Given a triple and a rule, return the visibility if the rule
@@ -93,3 +92,16 @@
 	 (get-all-triples)
 	 (filter #(or (owned-entities (entity %))
 		      (is-public? %))))))
+
+(defn update-game
+  "Updates the state of the game given a set of triples being asserted
+  by a given player."
+  [store & triples]
+  ;; TODO: This results in two moments, because of the two calls to
+  ;; add-triples. Not sure that's what we want. Could change it so
+  ;; that we have a propose-add-triples that returns what the game
+  ;; state would be if the specified triples were added.
+  (apply add-triples store triples)
+  (if (and (= :setup (value (first (query store ["game" "phase" "*"]))))
+	   (every? identity (map value (query store ["player:*" "ready" "*"]))))
+    (add-triples store ["game" "phase" :playing])))

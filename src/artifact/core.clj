@@ -13,7 +13,7 @@
 	    [compojure.route :as route])
   (:gen-class))
 
-(initialize-game *store*)
+(dosync (initialize-game *store*))
 
 ;; (def app
 ;;   (handler/site main-routes))
@@ -35,15 +35,10 @@
 	  (let [body (slurp (:body req))]
 	    (debug "Body is:" body)
 	    (debug "token is:" token)
-	    (api-post token (read-json body))))))
+	    (api-post token (read-json body false))))))
 
 (defroutes test-routes
-  (POST "/test" [token]
-       (fn [req]
-	 (let [body (slurp (:body req))]
-	   (debug "Body is:" body)
-	   (debug "token is:" token)
-	   (api-post token (read-json body))))))
+  (POST "/test" [token] "test"))
 
 (defroutes page-routes
   (GET "/" [] (to-html-str index))

@@ -31,5 +31,7 @@
   ;; TODO: Handle case where game state has moved on and action is
   ;; no longer available
   (debug "Asserted by " token " : " triples)
-  (dosync (apply add-triples *store* triples))
+  (dosync (apply update-game *store* triples))
+  ;; Return an empty string so that something gets rendered back to
+  ;; the client.
   "")
