@@ -86,13 +86,11 @@ function readyButtonCell(state, player, self) {
     return cell; 
 }
 
-function mergeGameState (newState, status, jqXHR) {
-    displayGameState(newState); 
-    
+function updateUISetup(oldState, newState) {
     // Iterate over the list of players in game,players and display a
     // row for each, highlighting if it's us
     var newPlayers = getTripleValue(newState, "game", "players"); 
-    var oldPlayers = getTripleValue(gameState, "game", "players");
+    var oldPlayers = getTripleValue(oldState, "game", "players");
 
     var changes = diff(oldPlayers, newPlayers);
 
@@ -126,6 +124,26 @@ function mergeGameState (newState, status, jqXHR) {
     // 	// TODO: Delete row
     // }
 
+}
+
+function mergeGameState (newState, status, jqXHR) {
+    displayGameState(newState); 
+    
+    var phase = getTripleValue(newState, "game", "phase"); 
+    var oldPhase = getTripleValue(gameState, "game", "phase");
+
+    if (oldPhase == "setup" && phase == "playing") {
+	$("#setup-ui").hide();
+	$("#playing-ui").fadeIn(400);
+    }
+    // Handle the case where the user refreshes the page
+    else if (oldPhase == null) {
+	$("#" + phase + "-ui").show();
+    }
+
+    if (phase == "setup") {
+	updateUISetup(gameState, newState);
+    }
     gameState = newState;
 }
 

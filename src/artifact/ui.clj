@@ -67,9 +67,12 @@ game."
 	  [:raw! (str "var gameStateUrl='" (state-url token) "';")]]
 	 [:script {:src "/script/game.js"} ""]]
 	[:body
-	 [:div {:id "joining-ui"}
+	 [:div {:id "setup-ui"}
 	  [:table {:id "joined-players"}
 	   [:tr [:th "Player"] [:th "State"]] ""]]
+	 [:div {:id "playing-ui"}
+	  "The UI for actually playing the game will appear here."
+	  [:img {:src "/images/logo.jpg"} ""]]
 	 [:textarea {:id "gameState" :readonly "readonly" :rows 20}
 	  "diagnostic information is displayed here"]]])))))
 

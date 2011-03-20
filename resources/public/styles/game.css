@@ -19,3 +19,8 @@
 {
     font-style: italic;
 }
+
+#playing-ui, #setup-ui
+{
+    display: none;
+}
