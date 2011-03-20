@@ -8,7 +8,8 @@
 	compojure.core
 	artifact.ui
 	artifact.api
-	artifact.logging)
+	artifact.logging
+	artifact.triplestore)
   (:require [compojure.handler :as handler]
 	    [compojure.route :as route])
   (:gen-class))
@@ -66,3 +67,8 @@
     (future (run-jetty (var app) {:port 8080 :configurator set-server})))
   (defn debug-stop []
     (.stop @server)))
+
+(defn reset-game []
+  (dosync
+   (reset-triplestore *store*)
+   (initialize-game *store*)))
