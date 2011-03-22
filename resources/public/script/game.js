@@ -126,27 +126,63 @@ function updateUISetup(oldState, newState) {
 
 }
 
-function mergeGameState (newState, status, jqXHR) {
-    displayGameState(newState); 
-    
-    var phase = getTripleValue(newState, "game", "phase"); 
-    var oldPhase = getTripleValue(gameState, "game", "phase");
+var watches = [];
 
-    if (oldPhase == "setup" && phase == "playing") {
+// Given an entity e and an attribute a, call f whenever the 
+// value of the corresponding triple changes.
+function addWatch(e, a, f) {
+    var watch = null; 
+    for (var i = 0; i < watches.length; ++i) {
+	if (watches[i].e == e && watches[i].a == a) {
+	    watch = watches[i];
+	    break;
+	}
+    }
+
+    if (watch == null) {
+	watch = new Object();
+	watch.e = e;
+	watch.a = a;
+	watches.push(watch);
+    }
+
+    watch.f = f;
+}
+
+function fireWatches(oldState, newState) {
+    for (var watch in watches) {
+	var oldVal = getTripleValue(oldState, watch.e, watch.a);
+	var newVal = getTripleValue(newState, watch.e, watch.a);
+
+	if (oldVal != newVal) {
+	    watch.f(oldState, newState, oldVal, newVal);
+	}
+    }
+}
+
+function watchPhase(oldState, newState, oldPhase, newPhase) {
+   if (oldPhase == "setup" && newPhase == "playing") {
 	$("#setup-ui").hide();
 	$("#playing-ui").fadeIn(400);
     }
     // Handle the case where the user refreshes the page
     else if (oldPhase == null) {
-	$("#" + phase + "-ui").show();
+	$("#" + newPhase + "-ui").show();
     }
 
     if (phase == "setup") {
 	updateUISetup(gameState, newState);
     }
+ }
+
+function mergeGameState (newState, status, jqXHR) {
+    displayGameState(newState); 
+    fireWatches(gameState, newState);
     gameState = newState;
 }
 
 function updateGameState () {
     $.getJSON(gameStateUrl, {}, mergeGameState);
 }
+
+addWatch("game", "phase", watchPhase);
