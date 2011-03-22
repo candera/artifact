@@ -170,7 +170,7 @@ function watchPhase(oldState, newState, oldPhase, newPhase) {
 	$("#" + newPhase + "-ui").show();
     }
 
-    if (phase == "setup") {
+    if (newPhase == "setup") {
 	updateUISetup(gameState, newState);
     }
  }
