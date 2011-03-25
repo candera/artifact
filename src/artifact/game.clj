@@ -7,14 +7,31 @@
   [store]
   (or (get-triple-value store "game" "players") []))
 
+(defn- next-entity-id
+  "Return the next available id for the specified entity in the specified store"
+  [store owning-entity owning-attribute id-generator]
+  (let [entity-ids (set (get-triple-value store owning-entity owning-attribute))]
+    (first
+     (filter
+      #(not (entity-ids %))
+      (map id-generator (iterate inc 1))))))
+
 (defn- next-player-id
   "Return the next available player id in the specified store."
   [store]
-  (let [player-ids (set (get-triple-value store "game" "players"))]
-    (first
-     (filter 
-      #(not (player-ids %))
-      (map #(str "player:" %) (iterate inc 1))))))
+  (next-entity-id store "game" "player" #(str "player:" %)))
+
+
+(defn- next-professor-id
+  "Return the next available professor id in the specified store."
+  [store]
+  (next-entity-id store "game" "professor" #(str "professor:" %)))
+
+(defn- next-ra-id
+  "Return the next available ra id in the specified store."
+  [store]
+  (next-entity-id store "game" "ra" #(str "ra:" %)))
+
 
 (defn lookup-token
   "Given a player id and a store, return the player's token."
@@ -40,13 +57,18 @@
   [store name]
   ;; TODO: Barf if we're not in the setup phase
   (let [token (str (rand-int 1000000000))
-	id (next-player-id store)]
+        id (next-player-id store)
+        professor-id (next-professor-id store)
+        ra-ids (dotimes [_ 5] (next-ra-id store))]
     (add-triples store
      [id "self" true]
      [id "name" name]
      [id "token" token]
      [id "ready" false]
      [id "available-actions" [id "ready" true]]
+     [id "money" 3]
+     [id "pieces" (conj ra-ids professor-id)]
+     [(first ra-ids) "location" "research-bar-ready"]
      ["game" "players" (conj (players store) id)])
     id))
 
