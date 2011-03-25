@@ -6,19 +6,19 @@ function displayGameState(state) {
     var str = "";
     for (var i = 0; i < gameState.length; ++i)
     {
-	str += gameState[i] + "\n";
+        str += gameState[i] + "\n";
     }
     if (str != $("#gameState").text()) {
-	$("#gameState").text(str);
+        $("#gameState").text(str);
     }
 }
 
 function getTripleValue(store, entity, att){
     for (var i = 0; i < store.length; ++i) {
-	var triple = store[i];
-	if (triple[0] == entity && triple[1] == att) {
-	    return triple[2];
-	}
+        var triple = store[i];
+        if (triple[0] == entity && triple[1] == att) {
+            return triple[2];
+        }
     }
     return null; 
 }
@@ -31,21 +31,21 @@ function diff(before, after) {
     var diff = new Object();
 
     if (before == null && after == null) {
-	diff.additions = [];
-	diff.deletions = [];
+        diff.additions = [];
+        diff.deletions = [];
     }
     else if (before == null) {
-	diff.additions = after;
-	diff.deletions = [];
+        diff.additions = after;
+        diff.deletions = [];
     }
     else if (after == null)
     {
-	diff.additions = [];
-	diff.deletions = before;
+        diff.additions = [];
+        diff.deletions = before;
     }
     else {
-	diff.additions = after.diff(before);
-	diff.deletions = before.diff(after);
+        diff.additions = after.diff(before);
+        diff.deletions = before.diff(after);
     }
 
     return diff;
@@ -53,10 +53,10 @@ function diff(before, after) {
 
 function postTriple(e, a, v) {
     $.ajax(gameStateUrl, 
-	   {contentType: "application/json", 
-	    data: JSON.stringify([[e, a, v]]),
-	    processData: false,
-	    type: "POST"}); 
+           {contentType: "application/json", 
+            data: JSON.stringify([[e, a, v]]),
+            processData: false,
+            type: "POST"}); 
 }
 
 function readyButtonCell(state, player, self) {
@@ -66,21 +66,21 @@ function readyButtonCell(state, player, self) {
     var ready = getTripleValue(state, player, "ready");
 
     if (ready) {
-	cell.text("Ready");
+        cell.text("Ready");
     }
     else if (self) {
-	var button = $("<button>");
-	cell.append(
-	    button.text("Start game")
-		.click(function () {
-		    postTriple(player, "ready", true);
-		    button.remove();
-		    cell.attr("state", "ready");
-		    cell.text("Ready");
-		}));
+        var button = $("<button>");
+        cell.append(
+            button.text("Start game")
+                .click(function () {
+                    postTriple(player, "ready", true);
+                    button.remove();
+                    cell.attr("state", "ready");
+                    cell.text("Ready");
+                }));
     }
     else {
-	cell.text("Not ready");
+        cell.text("Not ready");
     }
 
     return cell; 
@@ -98,18 +98,18 @@ function updateUISetup(oldState, newState) {
     var deletions = changes.deletions;
 
     for (var i = 0; i < additions.length; ++i) {
-	var addition = additions[i];
-	
-	var name = getTripleValue(newState, addition, "name");
-	var self = getTripleValue(newState, addition, "self");
+        var addition = additions[i];
+        
+        var name = getTripleValue(newState, addition, "name");
+        var self = getTripleValue(newState, addition, "self");
 
-	$("#joined-players")
-	    .append(
-		$("<tr>")
-		    .attr("player-id", addition)
-		    .addClass(self ? "self" : "other")
-		    .append($("<td>").text(name + (self ? " (you)" : "")))
-		    .append(readyButtonCell(newState, addition, self)));
+        $("#joined-players")
+            .append(
+                $("<tr>")
+                    .attr("player-id", addition)
+                    .addClass(self ? "self" : "other")
+                    .append($("<td>").text(name + (self ? " (you)" : "")))
+                    .append(readyButtonCell(newState, addition, self)));
     }
 
     // We don't even have a mechanism in the game for players to
@@ -119,9 +119,9 @@ function updateUISetup(oldState, newState) {
     // that point. Problem for later, I guess.
 
     // for (var i = 0; i < deletions.length: ++i) {
-    // 	var deletion = deletions[i];
+    //  var deletion = deletions[i];
     //
-    // 	// TODO: Delete row
+    //  // TODO: Delete row
     // }
 
 }
@@ -133,45 +133,46 @@ var watches = [];
 function addWatch(e, a, f) {
     var watch = null; 
     for (var i = 0; i < watches.length; ++i) {
-	if (watches[i].e == e && watches[i].a == a) {
-	    watch = watches[i];
-	    break;
-	}
+        if (watches[i].e == e && watches[i].a == a) {
+            watch = watches[i];
+            break;
+        }
     }
 
     if (watch == null) {
-	watch = new Object();
-	watch.e = e;
-	watch.a = a;
-	watches.push(watch);
+        watch = new Object();
+        watch.e = e;
+        watch.a = a;
+        watches.push(watch);
     }
 
     watch.f = f;
 }
 
 function fireWatches(oldState, newState) {
-    for (var watch in watches) {
-	var oldVal = getTripleValue(oldState, watch.e, watch.a);
-	var newVal = getTripleValue(newState, watch.e, watch.a);
+    for (var i = 0; i < watches.length; ++i) {
+	watch = watches[i];
+        var oldVal = getTripleValue(oldState, watch.e, watch.a);
+        var newVal = getTripleValue(newState, watch.e, watch.a);
 
-	if (oldVal != newVal) {
-	    watch.f(oldState, newState, oldVal, newVal);
-	}
+        if (oldVal != newVal) {
+            watch.f(oldState, newState, oldVal, newVal);
+        }
     }
 }
 
 function watchPhase(oldState, newState, oldPhase, newPhase) {
    if (oldPhase == "setup" && newPhase == "playing") {
-	$("#setup-ui").hide();
-	$("#playing-ui").fadeIn(400);
+        $("#setup-ui").hide();
+        $("#playing-ui").fadeIn(400);
     }
     // Handle the case where the user refreshes the page
     else if (oldPhase == null) {
-	$("#" + newPhase + "-ui").show();
+        $("#" + newPhase + "-ui").show();
     }
 
     if (newPhase == "setup") {
-	updateUISetup(gameState, newState);
+        updateUISetup(gameState, newState);
     }
  }
 
