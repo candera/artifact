@@ -1,0 +1,416 @@
+-*- mode: Org; mode: auto-fill -*-
+* Artifact
+** Game model
+*** Use a tuple store to record game state.
+**** Record a version number as well
+***** This can simply be an attribute of the global entity
+***** Alternately, can hide it in the state transition URLs
+**** Somehow have a list of functions to act on transitions
+***** Run the list of functions whenever there's a change
+****** Run until no function produces a new state?
+****** Or run just once on the new state?
+**** Submit functions to cause a transition
+***** As source? 
+****** Seems like a bad idea from a security standpoint
+***** Or are they submitted as tags which are bound to functions?
+***** As triples?
+I sort of like that idea. It's already the lingua franca of the
+system, and it gives a nice way for the server and the app to refer to
+the parts of the board, without making the app care about the board. 
+
+The drawback is that the app still needs to know how to form URLs, but
+maybe we can solve that that by passing the URLs in and putting the
+triples in the body. 
+*** Are there available open source tuple stores I can use?
+I've decided to put this research on hold: Clojure makes it trivial to
+do what I want, to the extent that it would actually be more work to
+use a tuple store.
+**** Sesame
+**** Jena
+**** Open Link Virtuoso
+**** D2R Server
+**** BigOWLm
+**** AllegroGraph
+**** 4store
+**** RDF?
+*** Model concepts
+**** Changes to the state since a given time
+Changes since time zero give you the whole game state
+**** Actions a user can take right now
+As a list of URLs to POST to, with some sort of corresponding
+identifier so that the UI can correlate it to some sort of interaction
+with the board. Or as a list of tuple sequences that the user can
+assert. 
+
+Decided to use tuples. Nice to make them first class, and it gives the
+client and the server a common language to refer to things with in
+both directions. Actions become simple tuple assertions.
+*** Process
+**** Client POSTs to action URL
+***** Might receive a list of possible actions by URL
+***** Maybe recieve a list of possible actions by triple
+***** Might receive notice that updated game state is available
+***** Might receive an error
+***** Might receive an empty action list - waiting for another player to do their thing
+**** Repeat ad-infinitum
+**** Can alternately GET every one second or something to see if the list of choices or game state has changed
+**** Questions
+***** Can I get away with using the player names as their IDs?
+It would get me out of using the "player1" indirection, but it seems
+too risky: seems like that's letting the client introduce entity
+names, and at that point collisions are possible. 
+***** Could I solve this problem by using namespaces?
+Is that any better? The client still have to know how to compose a
+player identifier from a player name.
+***** Is it reasonable to think that clients are going to have to know about namespaces?
+I don't have a reason to think they do yet.
+***** Is there anything about the current design that would preclude non-player clients?
+Specifically observers. Seems like observers could be either god-mode
+or public, and they'd only have access to the /api/state endpoint,
+receiving output that was filtered to public-only facts or to all
+facts. But that would require new UI, so I don't think we're going
+with that initially. UI might be as simple as having the same UI but
+being able to switch between players, though. 
+***** TODO Do I need assertions and retractions, or are assertions alone enough?
+      :PROPERTIES:
+      :ID:       996a1a85-fc42-402d-b82b-dc7881516075
+      :END:
+I'm guessing I'm going to need retractions. Either that or deal with
+the fact that the client-side state table is going to grow and grow.
+Because imagine the scenario where an RA is knocked out of the game
+entirely. There's no way to delete them. But perhaps everything in the
+game pulls from a fixed pool of resources and there are a set number
+of RAs: you'd just mark some of them as "inactive". 
+
+Are there any cases where a resource is unlimited? It seems like no,
+since the physical game has a limited number of items. But are there
+virtual resources in the physical game that are unlimited?
+***** TODO Do I need indexed attributes?
+***** DONE How do I deal with updating time?
+A change to time is a change to state, which is a change to time. So
+my plan to do a GET to just get diffs since a certain time implies an
+alteration to the URL the client uses to retrieve state, since the
+"read" is actually a "write". 
+
+Maybe the read itself doesn't have to be a write.
+
+I think a worse problem is that it's just hard to deal with diffs. Any
+failure in synchronizing the stream means that the client could apply
+diffs twice (although: would this be bad? aren't they idempotent?) or
+not at all (obviously bad). 
+
+I suspect this whole problem is easily solved by simply sending all
+the state every time. We can solve a lot of the bandwidth problems by
+simply using an etag indicating the current time, and if the whole
+state really becomes an issue, there are all sorts of optimizations to
+be done, including going to a diff-based approach, which the client
+could be smart about using the time triple to generate a URL. 
+
+Wait. I think I have this all wrong. Maybe the read isn't a write at
+all. You read the state, and it contains a URL that represents that
+state. Doing a GET against that URL gets diffs since then. There's
+really no need to change the URL if the state hasn't changed. So the
+state and the URL go together: any time you update the state, you
+update the URL. 
+
+Problem: how to code it up so that the URL is correctly generated?
+Seems like some sort of watch-like mechanism, where you get called
+with the new time and are given the opportunity to generate new
+triples to be included in that moment would work. 
+
+Still seems like it's easier just to send all of the state down to the
+client and optimize later if we need to.
+***** DONE How do I generate tokens?
+****** Option 1: generate salt for each game and hash player name with that
+- Advantages
+  - Easy
+  - Should be hard to brute-force
+    - Right?
+- Disadvantages
+  - Can't think of any
+  - Have to hash every player name on input to find right player
+****** Option 2: Generate a random number
+Picked this one. Seems like the simplest answer: no cryptography
+required. Just a lookup of the token, which we were going to have to
+do anyway. 
+- Advantages
+  - Even easier
+  - Impossible to calculate: can only guess
+  - Already going to have to search by token, since player name is not
+    transmitted 
+- Disadvantages
+  - Go from being able to calculate to needing to keep track of tokens
+***** TODO How do I deal with visibility?
+Problem: the "self" and "token" attributes should only be delivered to
+the players that own them. How to do this? 
+
+I have a vague idea that I want to use a set of schema tuples and the
+"namespaces" on the entities to achieve this. Will it work? Or I could
+do something along the lines of a special entity called "self" that
+would be translated at input/output to a player id. 
+
+****** Option 1: namespaces and wildcards
+acl:1|entity|*
+acl:1|attribute|*
+acl:1|visibility|public
+acl:2|entity|player:*
+acl:2|attribute|*
+acl:2|visibility|private
+acl:3|entity|player:*
+acl:3|attribute|ready
+acl:3|visibility|public
+acl:3|entity|player:*
+acl:3|attribute|name
+acl:3|visibility|public
+acl:4|entity|acl:*
+acl:4|attribute|*
+acl:4|visibility|private
+
+Could go right in the game schema. Then on entry, we'd bind a var to
+contain the "self" entities to a sequence like "player:1". Then on
+output we'd filter it down to anything that was either public or was
+private and had a self entity. 
+
+At this point, it really looks like a query engine would be helpful,
+because this looks a whole lot like a directed graph. We're going to
+have things like cards that are private to each player, but that might
+be shown to everyone at some point. 
+
+**** Example of process
+***** Two players Craig and Jeff
+***** Craig: 
+****** Request 
+POST /join
+name=Craig
+****** Response
+HTML of application, which includes reference to state URL
+(/api/state?since=0&token=andera). From here, all requests are made
+by Javascript portion of engine.
+****** Request
+GET /api/state?since=0&token=andera
+****** Response
+[
+  [ "game", "time", 1 ]           ; For diagnostic purposes
+  [ "game", "phase", "Setup" ],
+  [ "game", "players", [ "player1" ] ],
+  [ "player1", "self", true ],
+  [ "player1", "name", "Craig" ],
+  [ "player1", "available-actions", 
+    [ [ "player1", "ready", "true" ] ] ],
+  [ "game", "state-url", "/api/state?since=1&token=andera" ]
+]
+****** DONE Does this need to be separated out? No
+The thing I specifically don't like here is the player1:self:true
+tuple. That seems like a fact that's locally true, not globally true.
+I don't really like having versions of the truth that are different
+for everyone. 
+
+One way to solve this would be to return the player's id separately
+from the game state, so it wouldn't be included in the list of global
+facts. I sort of like that, because the facts are in essence a diff
+from the previous list of facts.
+
+The other alternative is to let players look themselves up by name.
+That would require that we would ensure that names are unique, and
+deal with requests for duplicate names. 
+
+Are there other alternatives? Is there a tuple I could return that
+would be private to the player, but still globally true? I guess
+player1:self:true is one way to do it, because player2:self:true would
+also be true, but not visible to anyone else. 
+
+I think I like that best. 
+
+***** Jeff
+****** Request 
+POST /api/join
+name=Jeff
+****** Response
+HTML of application, which includes reference to state URL
+(/api/state?since=1&token=dreher). From here, all requests are made by
+Javascript portion of engine.
+****** Request
+GET /api/state?since=1&token=dreher
+****** Response
+[ 
+  [ "game", "time", 2 ]
+  [ "game", "state-url", "/api/state?since=1&token=dreher" ]
+  [ "game", "phase", "Setup" ]
+  [ "game", "players", ["player1", "player2"] ]
+  [ "player1", "name", "Craig" ]
+  [ "player1", "state", "joined" ]
+  [ "player2", "name", "Jeff" ]
+  [ "player2", "self", true ] 
+  [ "player2", "available-actions" 
+    [ [ "player2", "ready", "true" ] ]
+  ]
+]
+***** Craig
+****** Request
+GET /api/state?time=0&token=andera
+*Note: using abbreviated response syntax from here*
+****** Response
+game:time:2
+player2:name:Jeff
+player2:state:joined
+game:phase:Setup
+player1:money:1
+game:state-url:/api/state?since=2&token=andera
+player1:available-actions:
+  player1:ready:true
+***** Craig
+****** Request
+POST /api/state?since=2&token=andera
+player1:ready:true
+****** Response
+game:time:3
+player1:state:ready
+game:state-url:/api/state?since=3&token=andera
+***** Jeff
+****** Request
+POST /api/state?time=1&token=dreher
+player2:ready:true
+****** Response
+game:time:4
+game:order-of-play:[player2, player1]  ; randomized
+player2:state:choosing-major-action
+game:phase:choose-major-action
+game:state-url:/api/state?since=4&token=dreher
+player2:money:1
+player2:available-actions:
+  professor:location:politic-1
+  professor:location:politic-2
+  <etc>
+***** Jeff
+****** Request
+POST /api/state?time=4&token=dreher
+professor:location:politic-1
+****** Response
+game:time:5
+game:state-url:/api/state?since=5&token=dreher
+player2:available-actions: 
+  <everything from before>
+  player2:phase-completed:true
+***** Jeff
+****** Request
+POST /api/state?time=5&token=dreher
+player2:phase-completed:true
+****** Response
+game:time:6
+game:state-url:/api/state?since=6&token=dreher
+player2:available-actions: []
+***** Craig
+****** Request
+GET /api/state?time=3&token=andera
+****** Response
+game:time:6
+game:state-url:/api/state?since=6&token=andera
+game:phase:choose-major-action
+player2:location:politic-1
+player1:money:1
+player1:available-actions:
+  
+** Client-side technologies
+- Good list of options here: https://github.com/bebraw/jswiki/wiki/Game-Engines
+*** GameJS looks promising
+- https://github.com/oberhamsi/gamejs
+- Has a Java server component. Not sure if that's good or bad.
+- Looks to be under active development
+- Open source
+
+*** SproutCore?
+- Chris Redinger is a fan
+- Looks very Ruby-like
+- Will it work for sprite-type games? Or is it more CRUDy?
+- Going to set this one aside for now
+*** GMP Javascript
+- Open source under an MIT license
+- At version 1.7.4 released Oct-2010, so reasonably recent
+*** Straight-up javascript: no framework. Just use <canvas> or DOM. 
+- Still an option, especially for learning
+*** RaphaelJS+JQuery
+*** sprite.js
+Stenzinger recommends
+
+Had a look at it. Looks fairly straightforward to use, and simple
+enough. Also claims that it works the same across desktop and mobile
+browsers, which is a big benefit. 
+
+Looks like it's under active development, and the license is MIT-like. 
+
+Hosted on github. 
+
+This one definitely makes the list. 
+*** crafty.js
+- Stenzinger recommends
+- Appears to be under active development. 
+- License is MIT or GPL
+- Available on github at https://github.com/louisstow/Crafty
+- Has an interesting component-entity structure that might be helpful
+- The docs aren't awesome, although the tutorial at
+  http://dailyjs.com/2011/02/11/crafty/ isn't bad, and looks to be
+  about a month old. 
+- Both this and sprite.js look like they are oriented towards
+  framerate games. Not sure how that fits with what's essentially a
+  board game. 
+*** EaselJS
+** Clojure templating engines
+*** Moustache
+Nope. Moustache is a routing framework. 
+*** Enlive
+Looks like a good idea if the HTML gets more HTML-y. For now I think
+I'll stick with just prxml. 
+** Communications
+*** Synchronous/RPC/REST
+**** Via HTML
+It's not clear to me that there's a big advantage to HTML, since the
+updates are via POST, and it's not going to be convenient to render
+all of them as forms. 
+**** Via JSON
+Going with this. It's a good fit on both the Clojure and browser
+sides, especially given that I'm using triples
+**** Via s-expressions
+Slightly more convenient for Clojure. Somewhat less convenient for
+clients. Probably no advantage over JSON. 
+*** Async 
+I think this is probably a future enhancement.
+**** Via email
+Not going to use this at first.
+**** Via IRC
+Not going to use this at first
+*** WebSockets?
+Ted Neward suggested looking into this if I'm going to be doing
+polling, which I most definitely am.
+*** Web technologies
+**** Jetty + Ring
+Advantage: works well enough and I don't really have to worry about
+it. Going to use this for now.
+**** Jetty alone
+Decided not to investigate this: going with Jetty + Ring for now. 
+**** xlightweb
+Decided not to investigate this: going with Jetty + Ring for now. 
+**** Netty
+Asynchronous. Not needed right now, and not willing to explore it.
+**** Aelph
+Asynchronous. Not needed right now, and not willing to explore it.
+** Resources
+*** The JavaScript Anthology: 1010 Essential Tips, Tricks, & Hacks 
+*** https://github.com/bebraw/jswiki/wiki/Game-Engines
+*** http://www.richhickey.com/tuplestore/tuplestore.htm
+*** The Essential Guide to HTML5: Using Games to learn HTML5 and JavaScript
+Engberg recommends. Kindle edition available.
+http://www.friendsofed.com/book.html?isbn=9781430233831
+** Conversation with Tim
+*** PUT versus POST?
+*** Explore the analogy with forms
+- Returning a list of URLs and rules for how to send things to them is
+  highly analogous. Can I leverage this? Am I giving up anything by
+  doing something that's only *like* forms?
+** Beta testers
+*** Shannon Ahern
+** Conversation with Tim
+** Utilities
+*** Curl
+To POST to an endpoint with literal content "blah": 
+
+curl -i --raw -d 'blah' -H "Content-Type: application/json" http://localhost:8080/test
