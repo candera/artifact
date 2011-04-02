@@ -310,6 +310,40 @@ player2:location:politic-1
 player1:money:1
 player1:available-actions:
   
+**** Dealing with update ordering
+The problem here is that I want to have the response to a POST be a
+game state update. But in the meantime, updates are still flowing in
+asynchronously from the timer loop. So I might have the problem that a
+player moves a piece, and before the response comes back confirming
+that the piece has moved, a game state update comes in that has the
+piece back in its original location. Naive handling of that might
+cause the piece to jump back and forth. 
+
+One idea that Alan and I talked about was that game state updates
+should not be applied until the response to the POST comes back. Then,
+once it does, we discard any changes that have a lower global time
+number than the response to the POST, since they are updates that are
+based on state that did not include the change we just made. 
+
+**** Example 1: 
+- Player moves professor to "deans-list-1". 
+- Player receives periodic update with time 12. 
+  - Note that this would include the player's professor in the old
+    location. 
+- Player receives response to move with time 13. 
+- Player discards periodic update because it's older than the response
+  to his move.
+
+**** Example 2 
+- Player moves professor to "deans-list-1". 
+- Player receives periodic update with time 12. 
+  - Note that this would include the player's professor in the old
+    location. 
+- Player receives periodic update with time 14. 
+  - This can happen due to the asynchronous nature of requests. 
+- Player receives response to move with time 13. 
+- Player discards move response and older periodic update.
+
 ** Client-side technologies
 - Good list of options here: https://github.com/bebraw/jswiki/wiki/Game-Engines
 *** GameJS looks promising
