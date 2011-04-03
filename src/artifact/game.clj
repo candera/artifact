@@ -7,14 +7,45 @@
   [store]
   (or (get-triple-value store "game" "players") []))
 
+(defn- pieces
+  "Given a store, returns a sequence of pieces in that store."
+  [store]
+  (or (get-triple-value store "game" "pieces") []))
+
+(defn- entities
+  "Return a seq of entity ids"
+  [prefix]
+  (map (fn [n] (str prefix ":" n)) (iterate inc 1)))
+
+(defn- next-entity-ids
+  "Returns the next n available ids for the specified entity in the specified store"
+  [store owning-entity owning-attribute prefix n]
+  (let [entity-ids (set (get-triple-value store owning-entity owning-attribute))]
+    (take n
+          (filter
+           #(not (entity-ids %))
+           (entities prefix)))))
+
+(defn- next-entity-id
+  "Return the next available id for the specified entity in the specified store"
+  [store owning-entity owning-attribute prefix]
+  (first (next-entity-ids store owning-entity owning-attribute prefix 1)))
+
 (defn- next-player-id
   "Return the next available player id in the specified store."
   [store]
-  (let [player-ids (set (get-triple-value store "game" "players"))]
-    (first
-     (filter 
-      #(not (player-ids %))
-      (map #(str "player:" %) (iterate inc 1))))))
+  (next-entity-id store "game" "players" "player"))
+
+
+(defn- next-professor-id
+  "Return the next available professor id in the specified store."
+  [store]
+  (next-entity-id store "game" "pieces" "professor"))
+
+(defn- next-ra-ids
+  "Return the next n ra ids in the specified store."
+  [store n]
+  (next-entity-ids store "game" "pieces" "ra" n))
 
 (defn lookup-token
   "Given a player id and a store, return the player's token."
@@ -40,14 +71,20 @@
   [store name]
   ;; TODO: Barf if we're not in the setup phase
   (let [token (str (rand-int 1000000000))
-	id (next-player-id store)]
+        id (next-player-id store)
+        professor-id (next-professor-id store)
+        ra-ids (next-ra-ids store 5)]
     (add-triples store
      [id "self" true]
      [id "name" name]
      [id "token" token]
      [id "ready" false]
      [id "available-actions" [id "ready" true]]
-     ["game" "players" (conj (players store) id)])
+     [id "money" 3]
+     [id "pieces" (conj ra-ids professor-id)]
+     [(first ra-ids) "location" "research-bar-ready"]
+     ["game" "players" (conj (players store) id)]
+     ["game" "pieces" (flatten (conj (pieces store) professor-id ra-ids))])
     id))
 
 ;;; Visibility
@@ -87,11 +124,11 @@
   in the session identitifed by token."
   [store token]
   (let [player-id (lookup-player store token)
-	owned-entities #{player-id}]
+        owned-entities #{player-id}]
     (->> store
-	 (get-all-triples)
-	 (filter #(or (owned-entities (entity %))
-		      (is-public? %))))))
+         (get-all-triples)
+         (filter #(or (owned-entities (entity %))
+                      (is-public? %))))))
 
 (defn update-game
   "Updates the state of the game given a set of triples being asserted
