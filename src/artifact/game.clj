@@ -83,8 +83,7 @@
      [id "money" 3]
      [id "pieces" (conj ra-ids professor-id)]
      [(first ra-ids) "location" "research-bar-ready"]
-     ["game" "players" (conj (players store) id)]
-     ["game" "pieces" (flatten (conj (pieces store) professor-id ra-ids))])
+     ["game" "players" (conj (players store) id)])
     id))
 
 ;;; Visibility
