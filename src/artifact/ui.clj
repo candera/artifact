@@ -72,7 +72,8 @@ game."
 	   [:tr [:th "Player"] [:th "State"]] ""]]
 	 [:div {:id "playing-ui"}
 	  "The UI for actually playing the game will appear here."
-	  [:img {:src "/images/logo.jpg"} ""]]
+          [:div {:id "ma-board"} ""]
+          [:div {:id "academy-board"} ""]]
 	 [:textarea {:id "gameState" :readonly "readonly" :rows 20}
 	  "diagnostic information is displayed here"]]])))))
 

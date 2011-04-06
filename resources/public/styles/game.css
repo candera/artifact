@@ -24,3 +24,21 @@
 {
     display: none;
 }
+
+#ma-board
+{
+    background-image: url('/images/ma-board.png');
+    background-repeat: no-repeat;
+    width: 800px;
+    height: 510px;
+    border: solid 2px black;
+}
+
+#academy-board
+{
+    background-image: url('/images/academy-board.png');
+    background-repeat: no-repeat;
+    width: 800px;
+    height: 1010px;
+    border: solid 2px black;
+}
