@@ -46,8 +46,8 @@ game."
 
 (defn game-page [token]
   (dosync
-   (let [player-id (lookup-player *store* token)
-	 player-name (lookup-player-name *store* player-id)]
+   (let [player-id (lookup-player @*store* token)
+	 player-name (lookup-player-name @*store* player-id)]
      (response
       (to-html-str
        [:doctype! "html"]
@@ -79,8 +79,14 @@ game."
 
 (defn join-page [player-name]
   (dosync
-   (let [player-id (add-player *store* player-name)
-	 token (lookup-token *store* player-id)]
+   (alter *store* add-player player-name)
+   ;; TODO: It so happens that if there are two players with the same
+   ;; name, they'll be returned in reverse order, with the most
+   ;; recently added player first. That's not necessarily guaranteed -
+   ;; it's an accident of the current implementation. A more robust
+   ;; implemementation could look at the store before and after and
+   ;; figure out which one got added.
+   (let [token (first (lookup-tokens-by-name @*store* player-name))]
      {:status 303
       :headers {"Location" (str "/game/" token)}})))
 

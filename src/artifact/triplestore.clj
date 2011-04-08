@@ -8,7 +8,7 @@
 ;;    { [entity att] val } ]  ; Moment 1
 ;;;  etc
 ;;; ]
-(defn create-triplestore [] (ref []))
+(defn create-triplestore [] [])
 
 (defn- triples-to-map [triples]
   (reduce #(assoc %1 (subvec %2 0 2) (nth %2 2))
@@ -23,23 +23,20 @@
 
 (defn- conj-new-moment
   "Produces a new triplestore that adds the specified triples, but
-  also adds a new value for entity 'game' attribute 'time' that's one
-  more than the latest one."
+also adds a new value for entity 'game' attribute 'time' that's one
+more than the latest one."
   [store triples]
   (let [new-game-time (inc (latest-time store))]
     (conj store
 	  (assoc (triples-to-map triples) time-key new-game-time))))
 
-(defn reset-triplestore [store]
-  (ref-set store []))
-
 (defn add-triples
   "Given a store and zero or more triples of the form [entity att val],
-  creates a new moment and updates the store with the specified
-  triples. As a convenience, a triple may be nil, in which case it is
-  ignored."
+creates a new moment and returns an updated store that includes the
+specified triples. As a convenience, a triple may be nil, in which
+case it is ignored."
   [store & triples]
-  (alter store conj-new-moment (filter identity triples)))
+  (conj-new-moment store (filter identity triples)))
 
 (defn get-triple-value
   "Returns the value of attribute 'att' for entity 'entity' from the
@@ -49,15 +46,15 @@ as a single vector pair."
   ([store entity att]
      (some identity (map
 		     #(get % [entity att])
-		     (rseq @store)))))
+		     (rseq store)))))
 
 (defn get-all-triples [store]
-  (reduce merge @store))
+  (reduce merge store))
 
 (defn- build-filter
   "Given a template (either ending with a * or a literal value),
-  return a predicate that will return true if either the template is *
-  or the parameter matches the template exactly."
+return a predicate that will return true if either the template is *
+or the parameter matches the template exactly."
   [t]
   (cond
    (= t "*")
@@ -101,7 +98,7 @@ as a single vector pair."
   returns all triples that have an entity of foo and a value of bar,
   regardless of attribute, and
 
-  (query store [\"player:*\" \"name\" \"*\"
+  (query store [\"player:*\" \"name\" \"*\"])
 
   returns all triples that have an entity that starts with \"player:\"
   and have an attribute of \"name\"."

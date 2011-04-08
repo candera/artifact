@@ -1,6 +1,7 @@
 (ns artifact.game
   "Implements the logic of the game"
-  (:use artifact.triplestore))
+  (:use artifact.triplestore
+        [artifact.util :only (break)]))
 
 (defn- players
   "Given a store, returns a sequence of players in that store."
@@ -47,10 +48,17 @@
   [store n]
   (next-entity-ids store "game" "pieces" "ra" n))
 
-(defn lookup-token
+(defn lookup-token-by-id
   "Given a player id and a store, return the player's token."
   [store id]
   (get-triple-value store id "token"))
+
+(defn lookup-tokens-by-name
+  "Given a player name and a store, return a sequence of tokens for
+players with that name."
+  [store name]
+  (let [player-ids (map entity (query store ["player:*" "name" name]))]
+    (map #(get-triple-value store % "token") player-ids)))
 
 (defn lookup-player-name
   "Given a player id and a store, return the player's name"
@@ -83,8 +91,7 @@
      [id "money" 3]
      [id "pieces" (conj ra-ids professor-id)]
      [(first ra-ids) "location" "research-bar-ready"]
-     ["game" "players" (conj (players store) id)])
-    id))
+     ["game" "players" (conj (players store) id)])))
 
 ;;; Visibility
 

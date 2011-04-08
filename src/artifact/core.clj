@@ -14,19 +14,7 @@
 	    [compojure.route :as route])
   (:gen-class))
 
-(dosync (initialize-game *store*))
-
-;; (def app
-;;   (handler/site main-routes))
-
-;;; Set things up so that we can use break when we're under swank
-(when (resolve 'swank.core.connection/*current-connection*)
-  (eval
-   '(do
-      (def swank-connection swank.core.connection/*current-connection*)
-      (defmacro break []
-	`(binding [swank.core.connection/*current-connection* swank-connection]
-		  (swank.core/break))))))
+(dosync (alter *store* initialize-game))
 
 (defroutes api-routes
   ;; TODO: extract token validation into middleware?
@@ -70,5 +58,5 @@
 
 (defn reset-game []
   (dosync
-   (reset-triplestore *store*)
-   (initialize-game *store*)))
+   (ref-set *store* (create-triplestore))
+   (alter *store* initialize-game)))
