@@ -73,6 +73,12 @@ players with that name."
        (first)
        (entity)))
 
+(defn- start-playing-action [player-count player-id]
+  [player-id "available-actions"
+   (if (> player-count 2)
+     ["game" "phase" "playing"]
+     [])])
+
 (defn add-player
   "Update the store to include a new player. Return the identity of
   the new player."
@@ -81,17 +87,21 @@ players with that name."
   (let [token (str (rand-int 1000000000))
         id (next-player-id store)
         professor-id (next-professor-id store)
-        ra-ids (next-ra-ids store 5)]
+        ra-ids (next-ra-ids store 5)
+        players (conj (players store) id)]
     (add-moment store
-     [id "self" true]
-     [id "name" name]
-     [id "token" token]
-     [id "ready" false]
-     [id "available-actions" [id "ready" true]]
-     [id "money" 3]
-     [id "pieces" (conj ra-ids professor-id)]
-     [(first ra-ids) "location" "research-bar-ready"]
-     ["game" "players" (conj (players store) id)])))
+                id "self" true
+                id "name" name
+                id "token" token
+                ;; need to set available-actions for all players to include
+                ;; action to start game iff there are at least 3 players
+                ;; also need to disallow a 5th player
+                id "available-actions" [id "ready" true]
+                id "money" 3
+                (map #(maybe-start-playing (count players) %) players)
+                id "pieces" (conj ra-ids professor-id)
+                (first ra-ids) "location" "research-bar-ready"
+                "game" "players" players)))
 
 ;;; Visibility
 
@@ -144,8 +154,6 @@ given player."
   ;; add-moment. Not sure that's what we want. Could change it so
   ;; that we have a propose-add-moment that returns what the game
   ;; state would be if the specified triples were added.
-  (let [updated-game-state (add-moment store triple)]
-    (if (and (= :setup (value (first (query updated-game-state ["game" "phase" "*"]))))
-             (every? identity (map value (query updated-game-state ["player:*" "ready" "*"]))))
-      (add-moment updated-game-state ["game" "phase" :playing])
-      updated-game-state)))
+  (if (= triple ["game" "phase" "playing"])
+    (add-moment store triple)
+    store))
