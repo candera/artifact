@@ -75,4 +75,4 @@
      (pprint))
 
 (pprint (get-all-triples store))
-(pprint  (map #(is-visible? #{"global"} %) (get-all-triples store)))
+(pprint  (map #(is-visible? #{"global"} %) (get-all-triples store)));; foo

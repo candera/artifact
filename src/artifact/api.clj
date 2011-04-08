@@ -25,13 +25,13 @@
 (defn api-post
   "Handles posts from the game client, which should specify a set of
   triples to assert."
-  [token triples]
+  [token triple]
   ;; TODO: Add checking of token
   ;; TODO: Handle errors in the input
   ;; TODO: Handle case where game state has moved on and action is
   ;; no longer available
-  (debug "Asserted by " token " : " triples)
-  (dosync (alter *store* update-game triples))
+  (debug "Asserted by " token " : " triple)
+  (dosync (alter *store* update-game triple))
   ;; Return an empty string so that something gets rendered back to
   ;; the client.
   "")

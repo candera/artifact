@@ -30,7 +30,7 @@ more than the latest one."
     (conj store
 	  (assoc (triples-to-map triples) time-key new-game-time))))
 
-(defn add-triples
+(defn add-moment
   "Given a store and zero or more triples of the form [entity att val],
 creates a new moment and returns an updated store that includes the
 specified triples. As a convenience, a triple may be nil, in which

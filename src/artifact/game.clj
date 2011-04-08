@@ -82,7 +82,7 @@ players with that name."
         id (next-player-id store)
         professor-id (next-professor-id store)
         ra-ids (next-ra-ids store 5)]
-    (add-triples store
+    (add-moment store
      [id "self" true]
      [id "name" name]
      [id "token" token]
@@ -105,7 +105,7 @@ players with that name."
 (defn initialize-game
   "Sets up a game with the data it needs in order to bootstrap."
   [store]
-  (add-triples store ["game" "phase" :setup]))
+  (add-moment store ["game" "phase" :setup]))
 
 (defn- rule-visibility
   "Given a triple and a rule, return the visibility if the rule
@@ -137,14 +137,15 @@ players with that name."
                       (is-public? %))))))
 
 (defn update-game
-  "Updates the state of the game given a set of triples being asserted
-  by a given player."
-  [store & triples]
+  "Updates the state of the game given a triple being asserted by a
+given player."
+  [store triple]
   ;; TODO: This results in two moments, because of the two calls to
-  ;; add-triples. Not sure that's what we want. Could change it so
-  ;; that we have a propose-add-triples that returns what the game
+  ;; add-moment. Not sure that's what we want. Could change it so
+  ;; that we have a propose-add-moment that returns what the game
   ;; state would be if the specified triples were added.
-  (apply add-triples store triples)
-  (if (and (= :setup (value (first (query store ["game" "phase" "*"]))))
-	   (every? identity (map value (query store ["player:*" "ready" "*"]))))
-    (add-triples store ["game" "phase" :playing])))
+  (let [updated-game-state (add-moment store triple)]
+    (if (and (= :setup (value (first (query updated-game-state ["game" "phase" "*"]))))
+             (every? identity (map value (query updated-game-state ["player:*" "ready" "*"]))))
+      (add-moment updated-game-state ["game" "phase" :playing])
+      updated-game-state)))
