@@ -80,10 +80,8 @@ players with that name."
      [])])
 
 (defn add-player
-  "Update the store to include a new player. Return the identity of
-  the new player."
+  "Return the triples needed to include a new player."
   [store name]
-  ;; TODO: Barf if we're not in the setup phase
   (let [token (str (rand-int 1000000000))
         id (next-player-id store)
         professor-id (next-professor-id store)

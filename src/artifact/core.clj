@@ -58,4 +58,4 @@
 
 (defn reset-game []
   (dosync
-   (ref-set *store* new-game)))
+   (ref-set *store* (new-game))))
