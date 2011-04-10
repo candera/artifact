@@ -2,4 +2,4 @@
   "Holds the state for the game."
   (:use artifact.triplestore))
 
-(def ^{:dynamic true} *store* (ref (create-triplestore)))
+(def ^{:dynamic true} *store* (ref nil))

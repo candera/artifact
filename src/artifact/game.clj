@@ -98,7 +98,7 @@ players with that name."
                 ;; also need to disallow a 5th player
                 id "available-actions" [id "ready" true]
                 id "money" 3
-                (map #(maybe-start-playing (count players) %) players)
+                (map #(start-playing-action (count players) %) players)
                 id "pieces" (conj ra-ids professor-id)
                 (first ra-ids) "location" "research-bar-ready"
                 "game" "players" players)))
@@ -112,10 +112,10 @@ players with that name."
    ["player:*" "ready" :public]
    ["player:*" "name"  :public]])
 
-(defn initialize-game
+(defn new-game
   "Sets up a game with the data it needs in order to bootstrap."
   [store]
-  (add-moment store ["game" "phase" :setup]))
+  (add-moment (create-triplestore) ["game" "phase" :setup]))
 
 (defn- rule-visibility
   "Given a triple and a rule, return the visibility if the rule
