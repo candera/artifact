@@ -1,42 +1,57 @@
-(ns artifact.triplestore)
+(ns artifact.triplestore
+  "A simple triple store with basic query capabilities. Might get replaced by something more capable at some point. Terminology:
 
-;;; Creates a new triple store, which internally is a vector of
-;;; moments, each of which is a map that takes an entity and an
-;;; attribute to a value. So like this:
-;;; [ { [entity att] val      ; Moment 0
-;;      [entity att] val } 
-;;    { [entity att] val } ]  ; Moment 1
-;;;  etc
-;;; ]
-(defn create-triplestore [] [])
+* triple: a sequence with three elements, entity, attribute, and value
 
-(defn- triples-to-map [triples]
+* moment: a map of [entity attribute] pairs to values, each of which
+  implies a triple. Also includes the entry [\"global\" \"time\"]
+  whose value is a monotonically increasing integer identifying the
+  instant this moment represents.
+
+* triplestore: a sequence of moments
+
+* tripleseq: a sequence of triples
+
+* triplespec: see the definition of query")
+
+(defn create-triplestore
+  "Creates a new, empty triplestore."
+  []
+  [])
+
+(defn- triples-to-map
+  "Turns a tripleseq into a map of the form
+ {[e a] v, [e a] v, ...}"
+  [tripleseq]
   (reduce #(assoc %1 (subvec %2 0 2) (nth %2 2))
 	  {}
-	  triples))
+	  tripleseq))
 
 (def ^{:doc "A key that can be passed to get-triple-value to retrieve the current time."}
   time-key ["global" "time"])
 
-(defn latest-time [store]
+(defn latest-time
+  "Returns the value of global/time for the most recent moment, or -1
+  of the triplestore is empty."
+  [store]
   (get (last store) time-key -1))
 
 (defn- conj-new-moment
-  "Produces a new triplestore that adds the specified triples, but
-also adds a new value for entity 'game' attribute 'time' that's one
-more than the latest one."
-  [store triples]
+  "Given a store and a tripleseq, returns the store with a new moment
+appended that adds the specified triples, but also adds a new value
+for entity 'game' attribute 'time' that's one more than the latest
+one."
+  [store tripleseq]
   (let [new-game-time (inc (latest-time store))]
     (conj store
-	  (assoc (triples-to-map triples) time-key new-game-time))))
+	  (assoc (triples-to-map tripleseq) time-key new-game-time))))
 
 (defn add-moment
-  "Given a store and zero or more triples of the form [entity att val],
-creates a new moment and returns an updated store that includes the
-specified triples. As a convenience, a triple may be nil, in which
-case it is ignored."
-  [store & triples]
-  (conj-new-moment store (filter identity triples)))
+  "Given a store and a tripleseq, creates a new moment and returns an
+updated store that includes the specified triples. As a convenience, a
+triple may be nil, in which case it is ignored."
+  [store tripleseq]
+  (conj-new-moment store (filter identity tripleseq)))
 
 (defn get-triple-value
   "Returns the value of attribute 'att' for entity 'entity' from the
@@ -48,8 +63,11 @@ as a single vector pair."
 		     #(get % [entity att])
 		     (rseq store)))))
 
-(defn get-all-triples [store]
-  (reduce merge store))
+(defn get-all-triples
+  "Returns a tripleseq containing the most current value of each
+  unique entity-attribute pair."
+  [store]
+  (map (fn [[[e a] v]] [e a v]) (reduce merge store)))
 
 (defn- build-filter
   "Given a template (either ending with a * or a literal value),
@@ -119,3 +137,8 @@ or the parameter matches the template exactly."
   "Given a triple, return the attribute"
   [triple]
   (second (first triple)))
+
+(defn query-values
+  "Like query, but returns only the values, not the triples."
+  [store & triplespecs]
+  (map value (query store triplespecs)))

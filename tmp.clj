@@ -76,3 +76,26 @@
 
 (pprint (get-all-triples store))
 (pprint  (map #(is-visible? #{"global"} %) (get-all-triples store)));; foo
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(use 'artifact.triplestore)
+(use 'artifact.game)
+
+(def store (new-game))
+(def store (add-moment store (add-player store "Craig")))
+(def store (add-moment store (add-player store "Alice")))
+(def store (add-moment store (add-player store "Ellen")))
+
+(use 'clojure.pprint)
+
+(pprint store)
+
+(pprint (reduce merge store))
+
+(pprint  (map (fn [[[e a] v]] [e a v]) (reduce merge store)))
+
+(query store ["player:*" "available-actions" "*"])
+
+(query-values store ["player:*" "available-actions" "*"])
+

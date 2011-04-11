@@ -73,33 +73,30 @@ players with that name."
        (first)
        (entity)))
 
-(defn- start-playing-action [player-count player-id]
-  [player-id "available-actions"
-   (if (> player-count 2)
-     ["game" "phase" "playing"]
-     [])])
+(defn- start-playing-action
+  "Given a player id, return the available-actions triple that starts
+the game."
+  [player-id]
+  [player-id "available-actions" [["game" "phase" "playing"]]])
 
 (defn add-player
-  "Return the triples needed to include a new player."
+  "Return the tripleseq needed to include a new player."
   [store name]
   (let [token (str (rand-int 1000000000))
         id (next-player-id store)
         professor-id (next-professor-id store)
         ra-ids (next-ra-ids store 5)
         players (conj (players store) id)]
-    (add-moment store
-                id "self" true
-                id "name" name
-                id "token" token
-                ;; need to set available-actions for all players to include
-                ;; action to start game iff there are at least 3 players
-                ;; also need to disallow a 5th player
-                id "available-actions" [id "ready" true]
-                id "money" 3
-                (map #(start-playing-action (count players) %) players)
-                id "pieces" (conj ra-ids professor-id)
-                (first ra-ids) "location" "research-bar-ready"
-                "game" "players" players)))
+    (concat
+     [[id "self" true]
+      [id "name" name]
+      [id "token" token]
+      [id "money" 3]
+      [id "pieces" (conj ra-ids professor-id)]
+      [(first ra-ids) "location" "research-bar-ready"]
+      ["game" "players" players]]
+     (when (> (count players) 2)
+       (map start-playing-action players)))))
 
 ;;; Visibility
 
@@ -112,8 +109,8 @@ players with that name."
 
 (defn new-game
   "Sets up a game with the data it needs in order to bootstrap."
-  [store]
-  (add-moment (create-triplestore) ["game" "phase" :setup]))
+  []
+  (add-moment (create-triplestore) [["game" "phase" :setup]]))
 
 (defn- rule-visibility
   "Given a triple and a rule, return the visibility if the rule
