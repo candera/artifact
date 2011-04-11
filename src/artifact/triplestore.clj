@@ -1,7 +1,9 @@
 (ns artifact.triplestore
   "A simple triple store with basic query capabilities. Might get replaced by something more capable at some point. Terminology:
 
-* triple: a sequence with three elements, entity, attribute, and value
+* triple: a sequence with three elements, entity, attribute, and
+  value. Entities and attributes must be strings. Values can be
+  strings, nil, integers, triples, or tripleseqs.
 
 * moment: a map of [entity attribute] pairs to values, each of which
   implies a triple. Also includes the entry [\"global\" \"time\"]
@@ -18,6 +20,48 @@
   "Creates a new, empty triplestore."
   []
   [])
+
+(defn entity
+  "Given a triple, return the entity"
+  [triple]
+  {:pre (triple? triple)}
+  (first triple))
+
+(defn attribute
+  "Given a triple, return the attribute"
+  [triple]
+  {:pre (triple? triple)}
+  (second triple))
+
+(defn value
+  "Given a triple, return the value"
+  [triple]
+  {:pre (triple? triple)}
+  (nth triple 2))
+
+;; triple? and tripleseq? make mutual use of each other, so one of
+;; them has to be declared first. I chose tripleseq? arbitrarily
+(declare tripleseq?)
+
+(defn triple?
+  "Returns true if its argument is a triple."
+  [x]
+  (and (seq? x)
+       (string? (entity x))
+       (string? (attribute x))
+       (or (nil? x)
+           (string? x)
+           (triple? x)
+           (tripleseq? x)
+           (integer? x))
+       (= 3 (count x))))
+
+(defn tripleseq?
+  "Returns true if its argument is a tripleseq."
+  [x]
+  (and (seq? x)
+       (every? triple? x)))
+
 
 (defn- triples-to-map
   "Turns a tripleseq into a map of the form
@@ -50,7 +94,8 @@ one."
   "Given a store and a tripleseq, creates a new moment and returns an
 updated store that includes the specified triples. As a convenience, a
 triple may be nil, in which case it is ignored."
-  [store tripleseq]
+  [store tripleseq] 
+  {:pre (every? #(or (nil? %) (triple? %)) tripleseq)}
   (conj-new-moment store (filter identity tripleseq)))
 
 (defn get-triple-value
@@ -123,22 +168,8 @@ or the parameter matches the template exactly."
   [store & triplespecs]
   (filter (build-specs-filter triplespecs) (get-all-triples store)))
 
-(defn value
-  "Given a triple, return the value"
-  [triple]
-  (second triple))
-
-(defn entity
-  "Given a triple, return the entity"
-  [triple]
-  (first (first triple)))
-
-(defn attribute
-  "Given a triple, return the attribute"
-  [triple]
-  (second (first triple)))
-
 (defn query-values
   "Like query, but returns only the values, not the triples."
   [store & triplespecs]
   (map value (query store triplespecs)))
+
