@@ -107,5 +107,6 @@
 
 (query-values store ["player:*" "available-actions" "*"])
 
+(query-values store ["I" "hate" :any])
 
 

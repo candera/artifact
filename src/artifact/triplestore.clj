@@ -160,7 +160,7 @@ and have an attribute of exactly \"name\"."
   (filter (build-spec-filter triplespec) (get-all-triples store)))
 
 (defn query-values
-  "Like query, but returns only the values, not the triples."
-  [store & triplespecs]
-  (map value (query store triplespecs)))
+  "Like query, but returns a seq of the values, not the triples."
+  [store triplespec]
+  (map value (query store triplespec)))
 

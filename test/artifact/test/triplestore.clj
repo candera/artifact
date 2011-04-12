@@ -8,11 +8,16 @@
         store (add-moment store [["h" "i" "j"] ["a" "b" "c"]])]
     (is (tripleseq? (get-all-triples store)))))
 
+(def ^{:private true} flintstones
+  (add-moment (create-triplestore) [["fred" "loves" "wilma"]
+                                    ["barney" "loves" "betty"]]))
+
 (deftest query-works
-  (let [store (create-triplestore)
-        store (add-moment store [["fred" "loves" "wilma"]
-                                 ["barney" "loves" "betty"]])]
-    (is (= [["fred" "loves" "wilma"]] (query store [#"f.*" :any :any])))
-    (is (= [["fred" "loves" "wilma"]] (query store ["fred" :any :any])))
-    (is (= (set [["fred" "loves" "wilma"] ["barney" "loves" "betty"]])
-             (set (query store [:any "loves" :any]))))))
+  (is (= [["fred" "loves" "wilma"]] (query flintstones [#"f.*" :any :any])))
+  (is (= [["fred" "loves" "wilma"]] (query flintstones ["fred" :any :any])))
+  (is (= (set [["fred" "loves" "wilma"] ["barney" "loves" "betty"]])
+         (set (query flintstones [:any "loves" :any])))))
+
+(deftest query-values-works
+  (is (= ["wilma"] (query-values flintstones ["fred" "loves" :any])))
+  (is (empty? (query-values flintstones ["barney" "hates" :any]))))
