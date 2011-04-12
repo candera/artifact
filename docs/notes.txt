@@ -388,6 +388,10 @@ This one definitely makes the list.
   framerate games. Not sure how that fits with what's essentially a
   board game. 
 *** EaselJS
+*** jQuery and jQueryUI
+According to Bobby and Larry, these have enough power to manage the
+drag and drop parts. Might be all we need. Moving to the top of the
+list. 
 ** Clojure templating engines
 *** Moustache
 Nope. Moustache is a routing framework. 
