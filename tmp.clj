@@ -87,9 +87,17 @@
 (def store (add-moment store (add-player store "Alice")))
 (def store (add-moment store (add-player store "Ellen")))
 
+(def store (create-triplestore))
+(def store (add-moment store [["fred" "loves" "wilma"]
+                                 ["barney" "loves" "betty"]]))
+
 (use 'clojure.pprint)
 
 (pprint store)
+
+(pprint (get-all-triples store))
+
+(query store [:any "loves" :any] ["fred" :any :any])
 
 (pprint (reduce merge store))
 
@@ -98,4 +106,6 @@
 (query store ["player:*" "available-actions" "*"])
 
 (query-values store ["player:*" "available-actions" "*"])
+
+
 

@@ -14,8 +14,5 @@
                                  ["barney" "loves" "betty"]])]
     (is (= [["fred" "loves" "wilma"]] (query store [#"f.*" :any :any])))
     (is (= [["fred" "loves" "wilma"]] (query store ["fred" :any :any])))
-    (is (= [["fred" "loves" "wilma"] ["barney" "loves" "betty"]]
-             (query store [:any "loves" :any])))
-    (is (= [["fred" "loves" "wilma"]]
-             (query store [:any "loves" :any]
-                    ["fred" :any #".*l.*"])))))
+    (is (= (set [["fred" "loves" "wilma"] ["barney" "loves" "betty"]])
+             (set (query store [:any "loves" :any]))))))

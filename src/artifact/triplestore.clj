@@ -129,7 +129,7 @@ exactly."
 
 (defn build-spec-filter
   "Given a single triplespec (see query) build a predicate that will
-  return true for aany tuple that matches the spec."
+return true for any tuple that matches the spec."
   [triplespec]
   (let [[e-spec a-spec v-spec] triplespec]
     (fn [[e a v]]
@@ -137,18 +137,11 @@ exactly."
 	   ((build-filter a-spec) a)
 	   ((build-filter v-spec) v)))))
 
-(defn- build-specs-filter
-  "Given a sequence of triplespecs (see query), build a predicate that
-  will return true for any triple that matches at least one
-  triplespec."
-  [triplespecs]
-  (apply comp (map build-spec-filter triplespecs)))
-
 (defn query
-  "Given a store and a seq of triplespecs, return a tripleseq of all
-triples that match all of the patterns defined by the triplespecs. The
-pattern can contain exact matches, regular expressions, or the
-keyword :any, which matches any value. So, for example:
+  "Given a store and a triplespec, return a tripleseq of all triples
+that match the pattern defined by the triplespec. The pattern can
+contain exact matches, regular expressions, or the keyword :any, which
+matches any value. So, for example:
 
   (query store [:any :any :any])
 
@@ -163,8 +156,8 @@ regardless of attribute, and
 
 returns all triples that have an entity that starts with \"player:\"
 and have an attribute of exactly \"name\"."
-  [store & triplespecs]
-  (filter (build-specs-filter triplespecs) (get-all-triples store)))
+  [store triplespec]
+  (filter (build-spec-filter triplespec) (get-all-triples store)))
 
 (defn query-values
   "Like query, but returns only the values, not the triples."
