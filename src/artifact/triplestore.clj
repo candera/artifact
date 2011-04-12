@@ -112,16 +112,17 @@ as a single vector pair."
   (map (fn [[[e a] v]] [e a v]) (reduce merge store)))
 
 (defn- build-filter
-  "Given a template (either ending with a * or a literal value),
-return a predicate that will return true if either the template is *
-or the parameter matches the template exactly."
+  "Given a template (a string, a regexp, or the symbol :any),
+return a predicate that will return true if either the template
+is :any, or the regexp matches, or the parameter matches the template
+exactly."
   [t]
   (cond
-   (= t "*")
+   (= t :any)
    (constantly true)
 
-   (.endsWith t "*")
-   #(.startsWith % (.substring t 0 (dec (count t))))
+   (= (class t) java.util.regex.Pattern)
+   #(re-matches t %)
 
    true
    #(= t %)))
@@ -131,7 +132,7 @@ or the parameter matches the template exactly."
   return true for aany tuple that matches the spec."
   [triplespec]
   (let [[e-spec a-spec v-spec] triplespec]
-    (fn [[[e a] v]]
+    (fn [[e a v]]
       (and ((build-filter e-spec) e)
 	   ((build-filter a-spec) a)
 	   ((build-filter v-spec) v)))))
@@ -144,24 +145,24 @@ or the parameter matches the template exactly."
   (apply comp (map build-spec-filter triplespecs)))
 
 (defn query
-  "Given a store and a seq of triple template, return all triples that
-  match the pattern. The pattern can contain either exact matches or
-  wildcards (a prefix string followed by a literal '*'), which matches
-  any item starting with the prefix. So, for example:
+  "Given a store and a seq of triplespecs, return a tripleseq of all
+triples that match all of the patterns defined by the triplespecs. The
+pattern can contain exact matches, regular expressions, or the
+keyword :any, which matches any value. So, for example:
 
-  (query store [\"*\" \"*\" \"*\"])
+  (query store [:any :any :any])
 
-  returns all triples, and
+returns all triples, and
 
-  (query store [\"foo\" \"*\" \"bar\"])
+  (query store [\"foo\" :any #\"^bar.*\"])
 
-  returns all triples that have an entity of foo and a value of bar,
-  regardless of attribute, and
+returns all triples that have an entity of foo and a value of bar,
+regardless of attribute, and
 
-  (query store [\"player:*\" \"name\" \"*\"])
+  (query store [#\"^player:.*\" \"name\" :any])
 
-  returns all triples that have an entity that starts with \"player:\"
-  and have an attribute of \"name\"."
+returns all triples that have an entity that starts with \"player:\"
+and have an attribute of exactly \"name\"."
   [store & triplespecs]
   (filter (build-specs-filter triplespecs) (get-all-triples store)))
 

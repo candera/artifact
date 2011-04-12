@@ -7,3 +7,15 @@
         store (add-moment store [["a" "b" "c"] ["d" "e" "f"]])
         store (add-moment store [["h" "i" "j"] ["a" "b" "c"]])]
     (is (tripleseq? (get-all-triples store)))))
+
+(deftest query-works
+  (let [store (create-triplestore)
+        store (add-moment store [["fred" "loves" "wilma"]
+                                 ["barney" "loves" "betty"]])]
+    (is (= [["fred" "loves" "wilma"]] (query store [#"f.*" :any :any])))
+    (is (= [["fred" "loves" "wilma"]] (query store ["fred" :any :any])))
+    (is (= [["fred" "loves" "wilma"] ["barney" "loves" "betty"]]
+             (query store [:any "loves" :any])))
+    (is (= [["fred" "loves" "wilma"]]
+             (query store [:any "loves" :any]
+                    ["fred" :any #".*l.*"])))))
