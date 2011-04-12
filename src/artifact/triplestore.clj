@@ -24,21 +24,17 @@
 (defn entity
   "Given a triple, return the entity"
   [triple]
-  {:pre (triple? triple)}
   (first triple))
 
 (defn attribute
   "Given a triple, return the attribute"
   [triple]
-  {:pre (triple? triple)}
   (second triple))
 
 (defn value
   "Given a triple, return the value"
   [triple]
-  {:pre (triple? triple)}
   (nth triple 2))
-
 ;; triple? and tripleseq? make mutual use of each other, so one of
 ;; them has to be declared first. I chose tripleseq? arbitrarily
 (declare tripleseq?)
@@ -46,15 +42,16 @@
 (defn triple?
   "Returns true if its argument is a triple."
   [x]
-  (and (seq? x)
+  (and (sequential? x)
+       (= 3 (count x))
        (string? (entity x))
        (string? (attribute x))
-       (or (nil? x)
-           (string? x)
-           (triple? x)
-           (tripleseq? x)
-           (integer? x))
-       (= 3 (count x))))
+       (let [v (value x)]
+         (or (nil? v)
+             (string? v)
+             (triple? v)
+             (tripleseq? v)
+             (integer? v)))))
 
 (defn tripleseq?
   "Returns true if its argument is a tripleseq."
@@ -62,11 +59,11 @@
   (and (seq? x)
        (every? triple? x)))
 
-
 (defn- triples-to-map
   "Turns a tripleseq into a map of the form
  {[e a] v, [e a] v, ...}"
   [tripleseq]
+  {:pre (tripleseq? tripleseq)}
   (reduce #(assoc %1 (subvec %2 0 2) (nth %2 2))
 	  {}
 	  tripleseq))
