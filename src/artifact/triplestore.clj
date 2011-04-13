@@ -35,9 +35,30 @@
   "Given a triple, return the value"
   [triple]
   (nth triple 2))
+
+(defn single?
+  "Returns true for a seq with a single item in it."
+  [x]
+  (and (seq x) (nil? (seq (rest x)))))
+
+(defn single
+  "Given a seq, returns the single item it is made up of. Throws otherwise."
+  [x]
+  {:pre (single? x)}
+  (first x))
+
 ;; triple? and tripleseq? make mutual use of each other, so one of
 ;; them has to be declared first. I chose tripleseq? arbitrarily
 (declare tripleseq?)
+
+(defn atom?
+  "Returns true if its argument is a valid atomic data type in the game."
+  [x]
+  (or (nil? x)
+      (string? x)
+      (true? x)
+      (false? x)
+      (integer? x)))
 
 (defn triple?
   "Returns true if its argument is a triple."
@@ -47,16 +68,16 @@
        (string? (entity x))
        (string? (attribute x))
        (let [v (value x)]
-         (or (nil? v)
-             (string? v)
+         (or (atom? v)
              (triple? v)
              (tripleseq? v)
-             (integer? v)))))
+             (and (sequential? v)
+                  (every? atom? v))))))
 
 (defn tripleseq?
   "Returns true if its argument is a tripleseq."
   [x]
-  (and (seq? x)
+  (and (sequential? x)
        (every? triple? x)))
 
 (defn- triples-to-map
@@ -137,11 +158,18 @@ return true for any tuple that matches the spec."
 	   ((build-filter a-spec) a)
 	   ((build-filter v-spec) v)))))
 
+(defn to-tripleseq
+  "Given an object, turn it into a tripleseq if possible."
+  [x]
+  ;; Currently we assume it's either a store or a tripleseq
+  ;; TODO: Make this more robust
+  (if (tripleseq? x) x (get-all-triples x)))
+
 (defn query
-  "Given a store and a triplespec, return a tripleseq of all triples
-that match the pattern defined by the triplespec. The pattern can
-contain exact matches, regular expressions, or the keyword :any, which
-matches any value. So, for example:
+  "Given a store or a tripleseq and a triplespec, return a tripleseq
+of all triples that match the pattern defined by the triplespec. The
+pattern can contain exact matches, regular expressions, or the
+keyword :any, which matches any value. So, for example:
 
   (query store [:any :any :any])
 
@@ -156,11 +184,11 @@ regardless of attribute, and
 
 returns all triples that have an entity that starts with \"player:\"
 and have an attribute of exactly \"name\"."
-  [store triplespec]
-  (filter (build-spec-filter triplespec) (get-all-triples store)))
+  [store-or-tripleseq triplespec]
+  (filter (build-spec-filter triplespec) (to-tripleseq store-or-tripleseq)))
 
 (defn query-values
   "Like query, but returns a seq of the values, not the triples."
-  [store triplespec]
-  (map value (query store triplespec)))
+  [store-or-tripleseq triplespec]
+  (map value (query store-or-tripleseq triplespec)))
 

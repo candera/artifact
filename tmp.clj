@@ -109,4 +109,15 @@
 
 (query-values store ["I" "hate" :any])
 
+(query store ["player:1" "token" :any])
+(query (get-all-triples store) ["player:1" "token" :any])
 
+(to-tripleseq store)
+(to-tripleseq (get-all-triples store))
+(tripleseq? (get-all-triples store))
+
+(map triple? (get-all-triples store))
+
+(pprint (zipmap (get-all-triples store) (map triple? (get-all-triples store))))
+
+(tripleseq? [["a" "b" "c"]])

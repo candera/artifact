@@ -110,7 +110,7 @@ the game."
 (defn new-game
   "Sets up a game with the data it needs in order to bootstrap."
   []
-  (add-moment (create-triplestore) [["game" "phase" :setup]]))
+  (add-moment (create-triplestore) [["game" "phase" "setup"]]))
 
 (defn- rule-visibility
   "Given a triple and a rule, return the visibility if the rule

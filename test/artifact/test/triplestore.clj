@@ -2,6 +2,13 @@
   (:use [artifact.triplestore]
         [clojure.test]))
 
+(defmacro throws [x & body]
+  `(is (= ~x (try ~@body (catch ~x x# ~x)))))
+
+(deftest single-works
+  (is (= 1 (single [1])))
+  (throws java.lang.AssertionException (single [1 2])))
+
 (deftest get-all-triples-returns-tripleseq
   (let [store (create-triplestore)
         store (add-moment store [["a" "b" "c"] ["d" "e" "f"]])
@@ -21,3 +28,10 @@
 (deftest query-values-works
   (is (= ["wilma"] (query-values flintstones ["fred" "loves" :any])))
   (is (empty? (query-values flintstones ["barney" "hates" :any]))))
+
+(deftest query-can-work-against-tripleseq
+  (let [tripleseq (get-all-triples flintstones)]
+   (is (= [["fred" "loves" "wilma"]] (query tripleseq [#"f.*" :any :any])))
+   (is (= [["fred" "loves" "wilma"]] (query tripleseq ["fred" :any :any])))
+   (is (= (set [["fred" "loves" "wilma"] ["barney" "loves" "betty"]])
+          (set (query tripleseq [:any "loves" :any]))))))
