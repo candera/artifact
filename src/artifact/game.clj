@@ -93,6 +93,8 @@ the game."
       [id "token" token]
       [id "money" 3]
       [id "pieces" (conj ra-ids professor-id)]
+      [id "available-actions" [id "ready" true]]
+      [id "ready" false]
       [(first ra-ids) "location" "research-bar-ready"]
       ["game" "players" players]]
      (when (> (count players) 2)

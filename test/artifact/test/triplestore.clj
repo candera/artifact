@@ -3,11 +3,12 @@
         [clojure.test]))
 
 (defmacro throws [x & body]
-  `(is (= ~x (try ~@body (catch ~x x# ~x)))))
+  (let [e# x]
+   `(is (= ~e# (try ~@body (catch ~e# _ ~e#))))))
 
 (deftest single-works
   (is (= 1 (single [1])))
-  (throws java.lang.AssertionException (single [1 2])))
+  (throws java.lang.AssertionError (single [1 2])))
 
 (deftest get-all-triples-returns-tripleseq
   (let [store (create-triplestore)
@@ -35,3 +36,7 @@
    (is (= [["fred" "loves" "wilma"]] (query tripleseq ["fred" :any :any])))
    (is (= (set [["fred" "loves" "wilma"] ["barney" "loves" "betty"]])
           (set (query tripleseq [:any "loves" :any]))))))
+
+;; (deftest get-all-triples-works-with-tripleseq
+;;   (let [tripleseq (get-all-triples flintstones)]
+;;     (is (= ))))

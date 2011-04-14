@@ -14,6 +14,9 @@
 
 * tripleseq: a sequence of triples
 
+* triplesource: a source of triples. Currently either a tripleseq or a
+  triplestore.
+
 * triplespec: see the definition of query")
 
 (defn create-triplestore
