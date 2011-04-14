@@ -3,7 +3,7 @@
         [clojure.test]))
 
 (defmacro throws [x & body]
-  `(is (try ~@(concat body [false]) (catch ~x ~'_ true))))
+  `(is (try ~@body false (catch ~x ~'_ true))))
 
 (deftest single-works
   (is (= 1 (single [1])))
