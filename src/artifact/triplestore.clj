@@ -47,7 +47,7 @@
 (defn single
   "Given a seq, returns the single item it is made up of. Throws otherwise."
   [x]
-  {:pre (single? x)}
+  {:pre ((single? x))}
   (first x))
 
 ;; triple? and tripleseq? make mutual use of each other, so one of
@@ -87,7 +87,7 @@
   "Turns a tripleseq into a map of the form
  {[e a] v, [e a] v, ...}"
   [tripleseq]
-  {:pre (tripleseq? tripleseq)}
+  {:pre ((tripleseq? tripleseq))}
   (reduce #(assoc %1 (subvec %2 0 2) (nth %2 2))
 	  {}
 	  tripleseq))
@@ -116,24 +116,24 @@ one."
 updated store that includes the specified triples. As a convenience, a
 triple may be nil, in which case it is ignored."
   [store tripleseq] 
-  {:pre (every? #(or (nil? %) (triple? %)) tripleseq)}
+  {:pre ((every? #(or (nil? %) (triple? %)) tripleseq))}
   (conj-new-moment store (filter identity tripleseq)))
 
-(defn get-triple-value
-  "Returns the value of attribute 'att' for entity 'entity' from the
-triplestore. Can accept the entity and attribute either as two args or
-as a single vector pair."
-  ([store [entity att]] (get-triple-value store entity att))
-  ([store entity att]
-     (some identity (map
-		     #(get % [entity att])
-		     (rseq store)))))
+(defn- to-tripleseq
+  "Given an object, turn it into a tripleseq if possible."
+  [triplesource]
+  ;; Currently we assume it's either a store or a tripleseq
+  ;; TODO: Make this more robust
+  (if (tripleseq? triplesource)
+    triplesource
+    (map (fn [[[e a] v]] [e a v]) (reduce merge triplesource))))
 
 (defn get-all-triples
   "Returns a tripleseq containing the most current value of each
-  unique entity-attribute pair."
-  [store]
-  (map (fn [[[e a] v]] [e a v]) (reduce merge store)))
+unique entity-attribute pair. Is the identity operation when passed a
+tripleseq."
+  [triplesource]
+  (to-tripleseq triplesource))
 
 (defn- build-filter
   "Given a template (a string, a regexp, or the symbol :any),
@@ -161,13 +161,6 @@ return true for any tuple that matches the spec."
 	   ((build-filter a-spec) a)
 	   ((build-filter v-spec) v)))))
 
-(defn to-tripleseq
-  "Given an object, turn it into a tripleseq if possible."
-  [x]
-  ;; Currently we assume it's either a store or a tripleseq
-  ;; TODO: Make this more robust
-  (if (tripleseq? x) x (get-all-triples x)))
-
 (defn query
   "Given a store or a tripleseq and a triplespec, return a tripleseq
 of all triples that match the pattern defined by the triplespec. The
@@ -187,11 +180,19 @@ regardless of attribute, and
 
 returns all triples that have an entity that starts with \"player:\"
 and have an attribute of exactly \"name\"."
-  [store-or-tripleseq triplespec]
-  (filter (build-spec-filter triplespec) (to-tripleseq store-or-tripleseq)))
+  [triplesource triplespec]
+  (filter (build-spec-filter triplespec) (to-tripleseq triplesource)))
 
 (defn query-values
   "Like query, but returns a seq of the values, not the triples."
-  [store-or-tripleseq triplespec]
-  (map value (query store-or-tripleseq triplespec)))
+  [triplesource triplespec]
+  (map value (query triplesource triplespec)))
+
+(defn get-triple-value
+  "Returns the value of attribute 'att' for entity 'entity' from the
+triplesource. Can accept the entity and attribute either as two args or
+as a single vector pair."
+  ([triplesource [entity att]] (get-triple-value triplesource entity att))
+  ([triplesource entity att]
+     (value (first (query triplesource [entity att :any])))))
 

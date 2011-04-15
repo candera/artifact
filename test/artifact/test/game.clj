@@ -10,44 +10,80 @@ of the newly added player"
   [tripleseq]
   (entity (single (query tripleseq [:any "token" :any]))))
 
-(defn- has-action
-  "Given a , a player id, and an action, return true if the player
-has that action available to them."
-  [store id action]
-  (some #(= action %) (get-triple-value store id "available-actions")))
+(defn- has-action?
+  "Given a triplesource, a player id, and an action, return true if
+the player has that action available to them."
+  [triplesource id action]
+  (some #(= action %) (get-triple-value triplesource id "available-actions")))
 
-;; I'm trying out this syntax for testing game behavior. It's a bit
-;; weird to do it all in a let like this, but it makes it easy to
-;; intersperse transitions and assertions in the order they would
-;; happen. Maybe later I'll write a macro to clean it up.
-(deftest add-player-sequence
-  (let [store (new-game)
-        player1-triples (add-player store "Player One")
-        id1 (added-player-id player1-triples)
-        _ (is (has-action ))
-        player2-triples (add-player store "Player Two")
-        store (add-moment store player2-triples)]
-        ]))
+(defn- scenario-clause
+  "Given a pair, if the first item is :assert, emits a literal underscore and te second item. Otherwise, emits the pair as-is."
+  [[a b]]
+  (if (= a :assert) ['_ b] [a b]))
 
-(deftest first-player-can-become-ready
-  (let [store (new-game)
-        store (add-moment store player1-triples)]
-    (is (= false (get-triple-value store id "ready")))))
+(defn- scenario-clauses
+  "Walks across items two at a time, calling gen-scenario-clause on
+each pair, creating a vector of bindings suitable for use in
+defscenario."
+  [items]
+  (reduce into [] (map scenario-clause (partition 2 items))))
 
-(deftest game-does-not-start-with-two-players
-  (let [store (new-game)
-        player1-triples (add-player store "Player One")
-        store (add-moment store player1-triples)
-        player2-triples (add-player store "Player Two")
-        store (add-moment store player2-triples)]
-    (is (empty? (get-triple-value store "player:1" "available-actions")))))
+(defmacro defscenario
+  "Generates a test of the type shown elsewhere in this file by
+emitting a let that has bindings interspersed with assertions."
+  [name & body]
+  `(deftest ~name
+     (let ~(scenario-clauses body))))
 
-(deftest game-can-start-with-three-ready-players
-  (let [store (new-game)
-        store (add-moment store (add-player store "Player One"))
-        store (add-moment store (add-player store "Player Two"))
-        store (add-moment store (add-player store "Player Three"))]
-    (is (every? #(= % [["game" "phase" "playing"]])
-                (query-values store ["player:*" "available-actions" "*"])))))
+(defn- can-become-ready?
+  "Returns true if the specified player has the [id \"ready\" true]
+action available. "
+  [triplesource id]
+  (has-action? triplesource id [id "ready" true]))
 
-(deftest game-cannot-start-with-four-unready-players)
+(defn- can-start-game?
+  "Returns true if the specified player has the [\"game\" \"phase\" \"playing\" action available."
+  [triplesource id]
+  (has-action? triplesource id ["game" "phase" "playing"]))
+
+(defscenario add-player-sequence
+  store (new-game)
+  player1-triples (add-player store "One")
+  id1 (added-player-id player1-triples)
+  store (add-moment store player1-triples)
+  :assert (is (can-become-ready? store id1))
+  :assert (is (not (can-start-game? player1-triples id1)))
+  player2-triples (add-player store "Two")
+  id2 (added-player-id player2-triples)
+  store (add-moment store player2-triples)
+  :assert (is (can-become-ready? store id2))
+  :assert (is (not (can-start-game? store id2)))
+  player3-triples (add-player store "Three")
+  id3 (added-player-id player3-triples)
+  store (add-moment store player3-triples)
+  :assert (is (can-become-ready? store id3))
+  :assert (is (not (can-start-game? store id1)))
+  :assert (is (not (can-start-game? store id2)))
+  :assert (is (not (can-start-game? store id3)))
+  ;; TODO: have one player become ready, assert game can't start
+  ;; TODO: have two players become ready, assert game can't start
+  ;; TODO: have third player become ready, assert game can start
+  )
+
+;; (deftest game-does-not-start-with-two-players
+;;   (let [store (new-game)
+;;         player1-triples (add-player store "Player One")
+;;         store (add-moment store player1-triples)
+;;         player2-triples (add-player store "Player Two")
+;;         store (add-moment store player2-triples)]
+;;     (is (empty? (get-triple-value store "player:1" "available-actions")))))
+
+;; (deftest game-can-start-with-three-ready-players
+;;   (let [store (new-game)
+;;         store (add-moment store (add-player store "Player One"))
+;;         store (add-moment store (add-player store "Player Two"))
+;;         store (add-moment store (add-player store "Player Three"))]
+;;     (is (every? #(= % [["game" "phase" "playing"]])
+;;                 (query-values store ["player:*" "available-actions" "*"])))))
+
+;; (deftest game-cannot-start-with-four-unready-players)

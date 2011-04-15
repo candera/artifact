@@ -5,6 +5,12 @@
 (defmacro throws [x & body]
   `(is (try ~@body false (catch ~x ~'_ true))))
 
+(defn- set=
+  "Returns true if the members of coll1 and coll2 are the same by
+converting them both to sets and using = to compare."
+  [coll1 coll2]
+  (= (set coll1) (set coll2)))
+
 (deftest single-works
   (is (= 1 (single [1])))
   (throws java.lang.AssertionError (single [1 2])))
@@ -15,27 +21,37 @@
         store (add-moment store [["h" "i" "j"] ["a" "b" "c"]])]
     (is (tripleseq? (get-all-triples store)))))
 
-(def ^{:private true} flintstones
-  (add-moment (create-triplestore) [["fred" "loves" "wilma"]
-                                    ["barney" "loves" "betty"]]))
+(def ^{:private true} flintstones-tripleseq
+  [["fred" "loves" "wilma"]
+   ["barney" "loves" "betty"]])
+
+(def ^{:private true} flintstones-store
+  (add-moment (create-triplestore) flintstones-tripleseq))
 
 (deftest query-works
-  (is (= [["fred" "loves" "wilma"]] (query flintstones [#"f.*" :any :any])))
-  (is (= [["fred" "loves" "wilma"]] (query flintstones ["fred" :any :any])))
+  (is (= [["fred" "loves" "wilma"]]
+           (query flintstones-store [#"f.*" :any :any])))
+  (is (= [["fred" "loves" "wilma"]]
+           (query flintstones-store ["fred" :any :any])))
   (is (= (set [["fred" "loves" "wilma"] ["barney" "loves" "betty"]])
-         (set (query flintstones [:any "loves" :any])))))
+         (set (query flintstones-store [:any "loves" :any])))))
 
 (deftest query-values-works
-  (is (= ["wilma"] (query-values flintstones ["fred" "loves" :any])))
-  (is (empty? (query-values flintstones ["barney" "hates" :any]))))
+  (is (= ["wilma"] (query-values flintstones-store ["fred" "loves" :any])))
+  (is (empty? (query-values flintstones-store ["barney" "hates" :any]))))
 
 (deftest query-can-work-against-tripleseq
-  (let [tripleseq (get-all-triples flintstones)]
-   (is (= [["fred" "loves" "wilma"]] (query tripleseq [#"f.*" :any :any])))
-   (is (= [["fred" "loves" "wilma"]] (query tripleseq ["fred" :any :any])))
-   (is (= (set [["fred" "loves" "wilma"] ["barney" "loves" "betty"]])
-          (set (query tripleseq [:any "loves" :any]))))))
+  (is (= [["fred" "loves" "wilma"]]
+           (query flintstones-tripleseq [#"f.*" :any :any])))
+  (is (= [["fred" "loves" "wilma"]]
+           (query flintstones-tripleseq ["fred" :any :any])))
+  (is (set= [["fred" "loves" "wilma"] ["barney" "loves" "betty"]]
+           (query flintstones-tripleseq [:any "loves" :any]))))
 
-;; (deftest get-all-triples-works-with-tripleseq
-;;   (let [tripleseq (get-all-triples flintstones)]
-;;     (is (= ))))
+(deftest get-all-triples-works-with-tripleseq
+  (is (set= flintstones-tripleseq (get-all-triples flintstones-tripleseq))))
+
+(deftest get-triple-value-works
+  (is (= "wilma"
+         (get-triple-value flintstones-store "fred" "loves")
+         (get-triple-value flintstones-tripleseq "fred" "loves"))))
