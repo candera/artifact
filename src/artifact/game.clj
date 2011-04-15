@@ -57,7 +57,7 @@
   "Given a player name and a store, return a sequence of tokens for
 players with that name."
   [store name]
-  (let [player-ids (map entity (query store ["player:*" "name" name]))]
+  (let [player-ids (map entity (query store [#"player:.*" "name" name]))]
     (map #(get-triple-value store % "token") player-ids)))
 
 (defn lookup-player-name
@@ -69,7 +69,7 @@ players with that name."
   "Given a token and a store, return the corresponding player id from
   that store."
   [store token]
-  (->> (query store ["*" "token" token])
+  (->> (query store [:any "token" token])
        (first)
        (entity)))
 
@@ -96,12 +96,21 @@ the game."
       [id "available-actions"
        (concat [[id "ready" true]]
                (when (> (count players) 2)
-                 ["game" "phase" "playing"]))]
+                 [["game" "phase" "playing"]]))]
       [id "ready" false]
       [(first ra-ids) "location" "research-bar-ready"]
       ["game" "players" players]]
      (when (> (count players) 2)
        (map start-playing-action players)))))
+
+(defn available-actions
+  ""
+  [triplesource id]
+  (let [players (players triplesource)]
+    (filter identity
+            [[id "ready" true]
+             (when (> (count players) 2)
+               ["game" "phase" "playing"])])))
 
 ;;; Visibility
 
