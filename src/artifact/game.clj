@@ -1,17 +1,18 @@
 (ns artifact.game
   "Implements the logic of the game"
-  (:use artifact.triplestore
-        [artifact.util :only (break)]))
+  (:use artifact.tuplestore
+        [artifact.util :only (break)])
+  (:refer-clojure :exclude [time]))
 
 (defn- players
   "Given a store, returns a sequence of players in that store."
   [store]
-  (or (get-triple-value store "game" "players") []))
+  (or (get-tuple-value store "game" "players") []))
 
 (defn- pieces
   "Given a store, returns a sequence of pieces in that store."
   [store]
-  (or (get-triple-value store "game" "pieces") []))
+  (or (get-tuple-value store "game" "pieces") []))
 
 (defn- entities
   "Return a seq of entity ids"
@@ -21,7 +22,7 @@
 (defn- next-entity-ids
   "Returns the next n available ids for the specified entity in the specified store"
   [store owning-entity owning-attribute prefix n]
-  (let [entity-ids (set (get-triple-value store owning-entity owning-attribute))]
+  (let [entity-ids (set (get-tuple-value store owning-entity owning-attribute))]
     (take n
           (filter
            #(not (entity-ids %))
@@ -51,19 +52,19 @@
 (defn lookup-token-by-id
   "Given a player id and a store, return the player's token."
   [store id]
-  (get-triple-value store id "token"))
+  (get-tuple-value store id "token"))
 
 (defn lookup-tokens-by-name
   "Given a player name and a store, return a sequence of tokens for
 players with that name."
   [store name]
   (let [player-ids (map entity (query store [#"player:.*" "name" name]))]
-    (map #(get-triple-value store % "token") player-ids)))
+    (map #(get-tuple-value store % "token") player-ids)))
 
 (defn lookup-player-name
   "Given a player id and a store, return the player's name"
   [store id]
-  (get-triple-value store id "name"))
+  (get-tuple-value store id "name"))
 
 (defn lookup-player
   "Given a token and a store, return the corresponding player id from
@@ -74,13 +75,13 @@ players with that name."
        (entity)))
 
 (defn- start-playing-action
-  "Given a player id, return the available-actions triple that starts
+  "Given a player id, return the available-actions tuple that starts
 the game."
   [player-id]
   [player-id "available-actions" [["game" "phase" "playing"]]])
 
 (defn add-player
-  "Return the tripleseq needed to include a new player."
+  "Return the tupleseq needed to include a new player."
   [store name]
   (let [token (str (rand-int 1000000000))
         id (next-player-id store)
@@ -98,8 +99,8 @@ the game."
 
 (defn available-actions
   ""
-  [triplesource id]
-  (let [players (players triplesource)]
+  [tuplesource id]
+  (let [players (players tuplesource)]
     (filter identity
             [[id "ready" true]
              (when (> (count players) 2)
@@ -117,58 +118,57 @@ the game."
 (defn new-game
   "Sets up a game with the data it needs in order to bootstrap."
   []
-  (add-moment (create-triplestore) [["game" "phase" "setup"]]))
+  [[0 "game" "phase" "setup"]])
 
 (defn- rule-visibility
-  "Given a triple and a rule, return the visibility if the rule
+  "Given a tuple and a rule, return the visibility if the rule
   matches, and nil otherwise."
-  [triple rule]
+  [tuple rule]
   (let [[espec aspec vis] rule
 	pred (build-spec-filter [espec aspec "*"])]
-    (when (pred triple) vis)))
+    (when (pred tuple) vis)))
 
 (defn- is-public?
-  "Returns true if the given triple is public."
-  [triple]
+  "Returns true if the given tuple is public."
+  [tuple]
   (->> acl-rules
-       (map #(rule-visibility triple %))
+       (map #(rule-visibility tuple %))
        (filter identity)		; Remove nils
        (last)
        (= :public)))
 
-(defn get-visible-triples
-  "Returns all the triples up to the current moment that are visible.
-  Triples are visible either if they are public or if they are visible
+(defn get-visible-tuples
+  "Returns all the tuples up to the current moment that are visible.
+  Tuples are visible either if they are public or if they are visible
   in the session identitifed by token."
   [store token]
   (let [player-id (lookup-player store token)
         owned-entities #{player-id}]
     (->> store
-         (get-all-triples)
          (filter #(or (owned-entities (entity %))
                       (is-public? %))))))
 
 (defn- consequents
   "Given some game state, return a list of functions that can generate
-new state (in the form of triples)."
-  [store tripleseq]
-  (let [[e a] (query store )])))
+new state (in the form of tuples)."
+  [store tupleseq]
+  (let [[e a] (query store )]))
 
-(defn- new-triples
-  "Given the store and some additional triples, return all the new triples
+(defn- new-tuples
+  "Given the store and some additional tuples, return all the new tuples
 that are a consequence of that state."
-  [store tripleseq]
-  (let [fns (consequents store tripleseq)]
+  [store tupleseq]
+  (let [fns (consequents store tupleseq)]
     (loop [f fns
-           acc [tripleseq]]
+           acc [tupleseq]]
       (let [res (apply (first f) store acc)]
         (if (next fns)
          (recur (next fns) (conj acc res)))))))
 
 (defn update-game
-  "Updates the state of the game given a triple being asserted by a
+  "Updates the state of the game given a tuple being asserted by a
 given player."
   [store player action]
   (apply add-moment store
-         (new-triples store [["game" "action" action]
+         (new-tuples store [["game" "action" action]
                              ["game" "actor" player]])))

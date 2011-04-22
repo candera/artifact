@@ -12,7 +12,8 @@
 	artifact.triplestore)
   (:require [compojure.handler :as handler]
 	    [compojure.route :as route])
-  (:gen-class))
+  (:gen-class)
+  (:refer-clojure :exclude [time]))
 
 (dosync (ref-set *store* new-game))
 
