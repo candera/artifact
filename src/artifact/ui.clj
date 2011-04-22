@@ -4,6 +4,7 @@
 	[clojure.contrib.json :only (json-str)]
 	[ring.util.response :only (response)]
 	compojure.core
+        artifact.triplestore
 	artifact.game
 	artifact.state))
 

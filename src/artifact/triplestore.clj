@@ -5,135 +5,114 @@
   value. Entities and attributes must be strings. Values can be
   strings, nil, integers, triples, or tripleseqs.
 
-* moment: a map of [entity attribute] pairs to values, each of which
-  implies a triple. Also includes the entry [\"global\" \"time\"]
-  whose value is a monotonically increasing integer identifying the
-  instant this moment represents.
-
-* triplestore: a sequence of moments
-
 * tripleseq: a sequence of triples
+
+* moment: a tripleseq containing in which no two triples have the same
+  entity and attribute. Always includes a logical triple with entity
+  \"global\" and attribute \"time\" whose value is an integer
+  identifying the instant this moment represents. This integer is
+  monotonically increasing for successive moments in a triplestore.
+
+* proposal: the combination of a triplestore and a tripleseq, which
+  together define a proposed new moment.
+
+* triplestore: a sequence of moments.
 
 * triplesource: a source of triples. Currently either a tripleseq or a
   triplestore.
 
 * triplespec: see the definition of query")
 
-(defn create-triplestore
-  "Creates a new, empty triplestore."
-  []
-  [])
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defprotocol TripleSource
+  "Implemented by types that can provide a tripleseq."
+  (to-tripleseq [this] "Return a tripleseq"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: The problem with doing things this way is that we no longer
+;; have a literal syntax for writing triples. I.e. we can't just say
+;; ["foo" "bar" 3], but instead have to say (triple "foo" "bar" 3).
+;; Same problem for tripleseqs. Is that really a big deal?
+
+(defrecord Triple [entity attribute value])
+
+(defn triple-atom?
+  "Returns true if is a valid atomic value for a triple. Valid atomic
+  values for a triple are strings, integers, booleans, and nil."
+  [x]
+  (or (string? x)
+      (integer? x)
+      (true? x)
+      (false? x)
+      (nil? x)))
+
+(declare triple?)
+(declare tripleseq?)
+
+(defn- triple-value?
+  "Returns true if x is a valud value for a triple. Valid values
+  include valid triple atoms (see triple-atom?), triples, and
+  sequences of those things."
+  [x]
+  (or (triple-atom? x)
+      (triple? x)
+      (and (sequential? x)
+           (every? triple-atom? x))
+      (tripleseq? x)))
+
+(defn triple
+  "Returns a new triple with the given entity, attribute, and value."
+  [e a v]
+  {:pre ((string? e) (string? a) (triple-value? v))}
+  (Triple. e a v))
 
 (defn entity
   "Given a triple, return the entity"
   [triple]
-  (first triple))
+  (:entity triple))
 
 (defn attribute
   "Given a triple, return the attribute"
   [triple]
-  (second triple))
+  (:attribute triple))
 
 (defn value
   "Given a triple, return the value"
   [triple]
-  (nth triple 2))
-
-(defn single?
-  "Returns true for a seq with a single item in it."
-  [x]
-  (and (seq x) (nil? (seq (rest x)))))
-
-(defn single
-  "Given a seq, returns the single item it is made up of. Throws otherwise."
-  [x]
-  {:pre ((single? x))}
-  (first x))
-
-;; triple? and tripleseq? make mutual use of each other, so one of
-;; them has to be declared first. I chose tripleseq? arbitrarily
-(declare tripleseq?)
-
-(defn atom?
-  "Returns true if its argument is a valid atomic data type in the game."
-  [x]
-  (or (nil? x)
-      (string? x)
-      (true? x)
-      (false? x)
-      (integer? x)))
+  (:value triple))
 
 (defn triple?
-  "Returns true if its argument is a triple."
+  "Returns true if its argument is a valid triple."
   [x]
-  (and (sequential? x)
-       (= 3 (count x))
+  (and (= (class x) Triple)
        (string? (entity x))
        (string? (attribute x))
-       (let [v (value x)]
-         (or (atom? v)
-             (triple? v)
-             (tripleseq? v)
-             (and (sequential? v)
-                  (every? atom? v))))))
+       (triple-value? (value x))))
 
-(defn tripleseq?
-  "Returns true if its argument is a tripleseq."
-  [x]
-  (and (sequential? x)
-       (every? triple? x)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn- triples-to-map
-  "Turns a tripleseq into a map of the form
- {[e a] v, [e a] v, ...}"
-  [tripleseq]
-  {:pre ((tripleseq? tripleseq))}
-  (reduce #(assoc %1 (subvec %2 0 2) (nth %2 2))
-	  {}
-	  tripleseq))
+(defrecord TripleStore [moments])
 
-(def ^{:doc "A key that can be passed to get-triple-value to retrieve the current time."}
-  time-key ["global" "time"])
+(defn triplestore
+  "Creates a new, empty triplestore."
+  []
+  (TripleStore. []))
 
-(defn latest-time
-  "Returns the value of global/time for the most recent moment, or -1
-  of the triplestore is empty."
-  [store]
-  (get (last store) time-key -1))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn- conj-new-moment
-  "Given a store and a tripleseq, returns the store with a new moment
-appended that adds the specified triples, but also adds a new value
-for entity 'game' attribute 'time' that's one more than the latest
-one."
+(defrecord Proposal [store tripleseq])
+
+(defn proposal
+  "Creates a new proposal"
   [store tripleseq]
-  (let [new-game-time (inc (latest-time store))]
-    (conj store
-	  (assoc (triples-to-map tripleseq) time-key new-game-time))))
+  (Proposal. store tripleseq))
 
-(defn add-moment
-  "Given a store and a tripleseq, creates a new moment and returns an
-updated store that includes the specified triples. As a convenience, a
-triple may be nil, in which case it is ignored."
-  [store tripleseq] 
-  {:pre ((every? #(or (nil? %) (triple? %)) tripleseq))}
-  (conj-new-moment store (filter identity tripleseq)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn- to-tripleseq
-  "Given an object, turn it into a tripleseq if possible."
-  [triplesource]
-  ;; Currently we assume it's either a store or a tripleseq
-  ;; TODO: Make this more robust
-  (if (tripleseq? triplesource)
-    triplesource
-    (map (fn [[[e a] v]] [e a v]) (reduce merge triplesource))))
-
-(defn get-all-triples
-  "Returns a tripleseq containing the most current value of each
-unique entity-attribute pair. Is the identity operation when passed a
-tripleseq."
-  [triplesource]
-  (to-tripleseq triplesource))
+;; TODO: plan to extend this to Triplestore, Proposal, TripleSeq, and
+;; maybe Triple.
 
 (defn- build-filter
   "Given a template (a string, a regexp, or the symbol :any),
@@ -195,4 +174,87 @@ as a single vector pair."
   ([triplesource [entity att]] (get-triple-value triplesource entity att))
   ([triplesource entity att]
      (value (first (query triplesource [entity att :any])))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: Implement Iterable? Or whatever interface lets me use filter
+;; etc. diretly on a Tripleseq.
+(defrecord TripleSeq [triples])
+
+(defn tripleseq
+  "Creates a new tripleseq given some triples"
+  [triples]
+  {:pre ((every? triple? triples))}
+  (TripleSeq. triples))
+
+(defn tripleseq?
+  "Returns true if x is a tripleseq"
+  [x]
+  (= (class x) TripleSeq))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defrecord Moment [tripleseq time])
+
+(defn moment
+  "Creates a new moment given some triples and a time"
+  [tripleseq time]
+  {:pre ((tripleseq? tripleseq) (integer? time))}
+  (Moment. tripleseq time))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn- not-implemented []
+  (throw (Exception. "Not yet implemented")))
+
+(defmulti combine
+  "Given two things, combine them together."
+  (fn [a b] [(class a) (class b)]))
+
+;; Given a store and a tripleseq, returns the store with a new moment
+;; appended that adds the specified triples, but also adds a new value
+;; for entity 'game' attribute 'time' that's one more than the latest
+;; one.
+(defmethod combine [TripleStore Moment]
+  [triplestore moment]
+  (not-implemented))
+
+(defmethod combine [Moment TripleSeq]
+  [moment tripleseq]
+  (not-implemented))
+
+(defmethod combine [TripleSeq Triple]
+  [tripleseq triple]
+  (not-implemented))
+
+(defmethod combine [TripleSeq TripleSeq]
+  [tripleseq tripleseq]
+  (not-implemented))
+
+(defmethod combine [TripleStore Moment]
+  [store moment]
+  (not-implemented))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn single?
+  "Returns true for a seq with a single item in it."
+  [x]
+  (and (seq x) (nil? (seq (rest x)))))
+
+(defn single
+  "Given a seq, returns the single item it is made up of. Throws otherwise."
+  [x]
+  {:pre ((single? x))}
+  (first x))
+
+(def ^{:doc "A key that can be passed to get-triple-value to retrieve the current time."}
+  time-key ["global" "time"])
+
+(defn latest-time
+  "Returns the value of global/time for the most recent moment, or -1
+  of the triplestore is empty."
+  [store]
+  (not-implemented))
+
 

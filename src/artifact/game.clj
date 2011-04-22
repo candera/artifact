@@ -87,21 +87,14 @@ the game."
         professor-id (next-professor-id store)
         ra-ids (next-ra-ids store 5)
         players (conj (players store) id)]
-    (concat
-     [[id "self" true]
-      [id "name" name]
-      [id "token" token]
-      [id "money" 3]
-      [id "pieces" (conj ra-ids professor-id)]
-      [id "available-actions"
-       (concat [[id "ready" true]]
-               (when (> (count players) 2)
-                 [["game" "phase" "playing"]]))]
-      [id "ready" false]
-      [(first ra-ids) "location" "research-bar-ready"]
-      ["game" "players" players]]
-     (when (> (count players) 2)
-       (map start-playing-action players)))))
+    [[id "self" true]
+     [id "name" name]
+     [id "token" token]
+     [id "money" 3]
+     [id "pieces" (conj ra-ids professor-id)]
+     [id "ready" false]
+     [(first ra-ids) "location" "research-bar-ready"]
+     ["game" "players" players]]))
 
 (defn available-actions
   ""
@@ -155,14 +148,27 @@ the game."
          (filter #(or (owned-entities (entity %))
                       (is-public? %))))))
 
+(defn- consequents
+  "Given some game state, return a list of functions that can generate
+new state (in the form of triples)."
+  [store tripleseq]
+  (let [[e a] (query store )])))
+
+(defn- new-triples
+  "Given the store and some additional triples, return all the new triples
+that are a consequence of that state."
+  [store tripleseq]
+  (let [fns (consequents store tripleseq)]
+    (loop [f fns
+           acc [tripleseq]]
+      (let [res (apply (first f) store acc)]
+        (if (next fns)
+         (recur (next fns) (conj acc res)))))))
+
 (defn update-game
   "Updates the state of the game given a triple being asserted by a
 given player."
-  [store triple]
-  ;; TODO: This results in two moments, because of the two calls to
-  ;; add-moment. Not sure that's what we want. Could change it so
-  ;; that we have a propose-add-moment that returns what the game
-  ;; state would be if the specified triples were added.
-  (if (= triple ["game" "phase" "playing"])
-    (add-moment store triple)
-    store))
+  [store player action]
+  (apply add-moment store
+         (new-triples store [["game" "action" action]
+                             ["game" "actor" player]])))

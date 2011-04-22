@@ -55,3 +55,13 @@ converting them both to sets and using = to compare."
   (is (= "wilma"
          (get-triple-value flintstones-store "fred" "loves")
          (get-triple-value flintstones-tripleseq "fred" "loves"))))
+
+(deftest add-moment-works
+  (is (set= [["global" "time" 0] ["a" "b" "c"]]
+            (get-all-triples (add-moment (create-triplestore) [["a" "b" "c"]]))))
+  (is (set= [["global" "time" 0] ["a" "b" "d"]]
+            (get-all-triples (add-moment (create-triplestore) [["a" "b" "c"] ["a" "b" "d"]]))))
+  (is (set= [["global" "time" 0] ["a" "b" "d"]]
+            (get-all-triples (add-moment (create-triplestore)
+                                         [["a" "b" "c"]]
+                                         [["a" "b" "d"]])))))

@@ -21,6 +21,36 @@ the parts of the board, without making the app care about the board.
 The drawback is that the app still needs to know how to form URLs, but
 maybe we can solve that that by passing the URLs in and putting the
 triples in the body. 
+**** update-game function
+Takes in the current state of the world (as a triplestore) and an
+action to perform and produces the new state of the world (as a
+triplestore).
+
+There needs to be a way to successively build up state. There might be
+a triple that holds the attempted action ["game" "action" ["game"
+"phase" "playing"], and another that holds the player that attempted
+to do it ["game" "actor" "player:1"]. Then we pick a function to run
+and run it. It takes as input the triplestore and a list of tripleseqs
+(currently holding only the action and the acting player) and produces a
+tripleseq, which we keep track of. Then we pick another function and
+run that. This one takes the store, the tripleseq with the action and
+the actor, and the tripleseq that was output from the previous one. 
+
+Now the questions are: 
+
+- How do we pick the functions? 
+- How do we know when to stop picking functions?
+- Is there simply a static list and they're all given a chance to run?
+- Do we use some sort of query language to pick them? 
+- If we use a query language, how do we prevent the same function
+  from getting picked again and again?
+- Or is it as simple as picking a list of functions based on the
+  action? 
+- Or do we use a query to pick a list?
+- Or do we re-analyze the game after every change and only run
+  functions that haven't already run? 
+- Or do we run all the functions that are selected to run, but stop
+  when they don't produce any change to game state?
 *** Are there available open source tuple stores I can use?
 I've decided to put this research on hold: Clojure makes it trivial to
 do what I want, to the extent that it would actually be more work to
