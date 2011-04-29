@@ -74,7 +74,7 @@
   (and (sequential? x)
        (= (count x) 4)
        (or (integer? (time x))
-           (nil? x))
+           (nil? (time x)))
        (string? (entity x))
        (string? (attribute x))
        (tuple-value? (value x))))
