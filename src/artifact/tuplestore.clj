@@ -85,9 +85,10 @@
   "Returns tupleseq containing the latest value of each tuple"
   [tupleseq]
   (->> tupleseq
-       (map (fn [[t e a v]] [[e a] [t v]]) ,,,)
-       (reduce merge {} ,,,)
-       (map (fn [[[e a] [t v]]] [t e a v])) ,,,))
+       (map (fn [[t e a v]] [[e a] [t v]]))
+       (reduce merge {})
+       (map (fn [[[e a] [t v]]] [t e a v]))
+       (sort)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
