@@ -57,9 +57,9 @@ converting them both to sets and using = to compare."
           [[1 "a" "b" "c"]])
          [[1 "a" "b" "c"]]))
   (is (= (reify-moment
-          [[1 "a" "b" "c"] [:now "d" "e" "f"] [:now "h" "i" "j"]])
+          [[1 "a" "b" "c"] [nil "d" "e" "f"] [nil "h" "i" "j"]])
          [[1 "a" "b" "c"] [2 "d" "e" "f"] [2 "h" "i" "j"]]))
   (is (= (reify-moment
-          [[:now "a" "b" "c"] [:now "d" "e" "f"] [:now "h" "i" "j"]])
+          [[nil "a" "b" "c"] [nil "d" "e" "f"] [nil "h" "i" "j"]])
            [[0 "a" "b" "c"] [0 "d" "e" "f"] [0 "h" "i" "j"]])))
 
