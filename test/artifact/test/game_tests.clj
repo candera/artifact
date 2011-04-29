@@ -1,4 +1,4 @@
-(ns artifact.test.game
+(ns artifact.test.game-tests
   (:use [artifact.game] :reload
         [artifact.triplestore]
         [artifact.state]
