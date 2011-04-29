@@ -73,7 +73,8 @@
   [x]
   (and (sequential? x)
        (= (count x) 4)
-       (integer? (time x))
+       (or (integer? (time x))
+           (= :now x))
        (string? (entity x))
        (string? (attribute x))
        (tuple-value? (value x))))
@@ -171,4 +172,19 @@ as a single vector pair."
   {:pre ((single? x))}
   (first x))
 
+(defn- max-time
+  "Given a tupleseq, return the maximum integer time, or -1 if the seq
+  contains no tuples with integer time."
+  [tupleseq]
+  (->> tupleseq
+      (map time)
+      (filter integer?)
+      (reduce max -1)))
 
+(defn reify-moment
+  "Given a tupleseq, replace all the time values of :now with an
+  integer one greater than the max time value of all other tuples."
+  [tupleseq]
+  (let [next-time (inc (max-time tupleseq))]
+    (map (fn [[t e a v]] [(if (= :now t) next-time t) e a v])
+         tupleseq)))

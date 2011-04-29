@@ -51,4 +51,15 @@ converting them both to sets and using = to compare."
   (is (set= (coalesce [[1 "a" "b" "c"] [1 "x" "y" "z"] [2 "a" "b" "C"] [2 "x" "y" "Z"] [3 "x" "y" "z"]])
             [[2 "a" "b" "C"] [3 "x" "y" "z"]])))
 
+(deftest reify-moment-works
+  (is (= [] (reify-moment [])))
+  (is (= (reify-moment
+          [[1 "a" "b" "c"]])
+         [[1 "a" "b" "c"]]))
+  (is (= (reify-moment
+          [[1 "a" "b" "c"] [:now "d" "e" "f"] [:now "h" "i" "j"]])
+         [[1 "a" "b" "c"] [2 "d" "e" "f"] [2 "h" "i" "j"]]))
+  (is (= (reify-moment
+          [[:now "a" "b" "c"] [:now "d" "e" "f"] [:now "h" "i" "j"]])
+           [[0 "a" "b" "c"] [0 "d" "e" "f"] [0 "h" "i" "j"]])))
 
