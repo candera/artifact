@@ -144,6 +144,11 @@ and have an attribute of exactly \"name\"."
   [tuplesource tuplespec]
   (map value (query tuplesource tuplespec)))
 
+(defn query-value
+  "Like query-values, but only returns the first value."
+  [tupleseq tuplespec]
+  (first (query-values tupleseq tuplespec)))
+
 (defn get-tuple-value
   "Returns the value of attribute 'att' for entity 'entity' from the
 tuplesource. Can accept the entity and attribute either as two args or
