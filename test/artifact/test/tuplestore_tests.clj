@@ -17,33 +17,25 @@ converting them both to sets and using = to compare."
   (throws java.lang.AssertionError (single [1 2])))
 
 (def ^{:private true} flintstones-tupleseq
-  [[1 "fred" "loves" "wilma"]
-   [1 "barney" "loves" "betty"]])
+  [[1 "fred" "loves" nil]
+   [1 "barney" "loves" "betty"]
+   [nil "fred" "loves" "wilma"]])
 
 (deftest query-works
-  (is (= [[1 "fred" "loves" "wilma"]]
-           (query flintstones-tupleseq [#"f.*" :any :any])))
-  (is (= [[1 "fred" "loves" "wilma"]]
-           (query flintstones-tupleseq ["fred" :any :any])))
-  (is (set= [[1 "fred" "loves" "wilma"] [1 "barney" "loves" "betty"]]
-            (query flintstones-tupleseq [:any "loves" :any]))))
+  (is (= [[1 "fred" "loves" nil] [nil "fred" "loves" "wilma"]]
+           (query flintstones-tupleseq [:any #"f.*" :any :any])))
+  (is (= [[1 "fred" "loves" nil] [nil "fred" "loves" "wilma"]]
+           (query flintstones-tupleseq [:any "fred" :any :any])))
+  (is (= [[1 "fred" "loves" nil] [1 "barney" "loves" "betty"]]
+           (query flintstones-tupleseq [1 :any "loves" :any]))))
 
 (deftest query-values-works
-  (is (= ["wilma"] (query-values flintstones-tupleseq ["fred" "loves" :any])))
-  (is (empty? (query-values flintstones-tupleseq ["barney" "hates" :any]))))
+  (is (= [nil "wilma"] (query-values flintstones-tupleseq [:any "fred" "loves" :any])))
+  (is (empty? (query-values flintstones-tupleseq [:any "barney" "hates" :any]))))
 
-(deftest query-can-work-against-tupleseq
-  (is (= [[1 "fred" "loves" "wilma"]]
-           (query flintstones-tupleseq [#"f.*" :any :any])))
-  (is (= [[1 "fred" "loves" "wilma"]]
-           (query flintstones-tupleseq ["fred" :any :any])))
-  (is (set= [[1 "fred" "loves" "wilma"] [1 "barney" "loves" "betty"]]
-           (query flintstones-tupleseq [:any "loves" :any]))))
-
-(deftest get-tuple-value-works
+(deftest get-latest-value-works
   (is (= "wilma"
-         (get-tuple-value flintstones-tupleseq "fred" "loves")
-         (get-tuple-value flintstones-tupleseq "fred" "loves"))))
+         (get-latest-value flintstones-tupleseq "fred" "loves"))))
 
 (deftest coalesce-works
   (is (set= (coalesce [[1 "a" "b" "c"] [2 "a" "b" "C"]])
@@ -52,14 +44,15 @@ converting them both to sets and using = to compare."
             [[2 "a" "b" "C"] [3 "x" "y" "z"]])))
 
 (deftest reify-moment-works
-  (is (= [] (reify-moment [])))
-  (is (= (reify-moment
-          [[1 "a" "b" "c"]])
+  (is (= [] (reify-moment [] 0)))
+  (is (= (reify-moment [[1 "a" "b" "c"]] 1)
          [[1 "a" "b" "c"]]))
   (is (= (reify-moment
-          [[1 "a" "b" "c"] [nil "d" "e" "f"] [nil "h" "i" "j"]])
+          [[1 "a" "b" "c"] [nil "d" "e" "f"] [nil "h" "i" "j"]]
+          2)
          [[1 "a" "b" "c"] [2 "d" "e" "f"] [2 "h" "i" "j"]]))
   (is (= (reify-moment
-          [[nil "a" "b" "c"] [nil "d" "e" "f"] [nil "h" "i" "j"]])
+          [[nil "a" "b" "c"] [nil "d" "e" "f"] [nil "h" "i" "j"]]
+          0)
            [[0 "a" "b" "c"] [0 "d" "e" "f"] [0 "h" "i" "j"]])))
 

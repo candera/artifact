@@ -1,27 +1,15 @@
 (ns artifact.tuplestore
   "A simple tuple store with basic query capabilities. Might get replaced by something more capable at some point. Terminology:
 
-* tuple: a sequence with three elements, entity, attribute, and
-  value. Entities and attributes must be strings. Values can be
-  strings, nil, integers, tuples, or tupleseqs.
+* tuple: a sequence with four elements, time, entity, attribute, and
+  value. Time can be nil (indicating 'now') or a non-negative integer.
+  Entities and attributes must be strings. Values can be strings, nil,
+  integers, tuples, booleans, or tupleseqs.
 
 * tupleseq: a sequence of tuples
 
-* moment: a tupleseq containing in which no two tuples have the same
-  entity and attribute. Always includes a logical tuple with entity
-  \"global\" and attribute \"time\" whose value is an integer
-  identifying the instant this moment represents. This integer is
-  monotonically increasing for successive moments in a tuplestore.
-
-* proposal: the combination of a tuplestore and a tupleseq, which
-  together define a proposed new moment.
-
-* tuplestore: a sequence of moments.
-
-* tuplesource: a source of tuples. Currently either a tupleseq or a
-  tuplestore.
-
 * tuplespec: see the definition of query"
+  (:use artifact.util)
   (:refer-clojure :exclude [time]))
 
 (defn tuple-atom?
@@ -112,9 +100,10 @@ exactly."
   "Given a single tuplespec (see query) build a predicate that will
 return true for any tuple that matches the spec."
   [tuplespec]
-  (let [[e-spec a-spec v-spec] tuplespec]
-    (fn [[_ e a v]]
-      (and ((build-filter e-spec) e)
+  (let [[t-spec e-spec a-spec v-spec] tuplespec]
+    (fn [[t e a v]]
+      (and ((build-filter t-spec) t)
+           ((build-filter e-spec) e)
 	   ((build-filter a-spec) a)
 	   ((build-filter v-spec) v)))))
 
@@ -124,48 +113,39 @@ of all tuples that match the pattern defined by the tuplespec. The
 pattern can contain exact matches, regular expressions, or the
 keyword :any, which matches any value. So, for example:
 
-  (query store [:any :any :any])
+  (query store [:any :any :any :any])
 
 returns all tuples, and
 
-  (query store [\"foo\" :any #\"^bar.*\"])
+  (query store [:any \"foo\" :any #\"^bar.*\"])
 
 returns all tuples that have an entity of foo and a value of bar,
 regardless of attribute, and
 
-  (query store [#\"^player:.*\" \"name\" :any])
+  (query store [:any #\"^player:.*\" \"name\" :any])
 
 returns all tuples that have an entity that starts with \"player:\"
 and have an attribute of exactly \"name\"."
   [tupleseq tuplespec]
+  {:pre ((tupleseq? tupleseq) (= (count tuplespec) 4))}
   (filter (build-spec-filter tuplespec) tupleseq))
 
 (defn query-values
   "Like query, but returns a seq of the values, not the tuples."
-  [tuplesource tuplespec]
-  (map value (query tuplesource tuplespec)))
-
-(defn query-value
-  "Like query-values, but only returns the first value."
   [tupleseq tuplespec]
-  (first (query-values tupleseq tuplespec)))
+  (map value (query tupleseq tuplespec)))
 
-(defn get-tuple-value
-  "Returns the value of attribute 'att' for entity 'entity' from the
-tuplesource. Can accept the entity and attribute either as two args or
-as a single vector pair."
-  ([tuplesource [entity att]] (get-tuple-value tuplesource entity att))
-  ([tuplesource entity att]
-     (value (first (query tuplesource [entity att :any])))))
+(defn get-latest-value
+  "Returns the latest value of attribute 'att' for entity 'entity'
+  from the tupleseq."
+  [tupleseq entity att]
+  (value (last (query tupleseq [:any entity att :any]))))
 
 (defn tupleseq?
   "Returns true if x is a tupleseq"
   [x]
   (and (sequential? x)
        (every? tuple? x)))
-
-(defn- not-implemented []
-  (throw (Exception. "Not yet implemented")))
 
 (defn single?
   "Returns true for a seq with a single item in it."
@@ -178,19 +158,9 @@ as a single vector pair."
   {:pre ((single? x))}
   (first x))
 
-(defn- max-time
-  "Given a tupleseq, return the maximum time, or -1 if the seq
-  contains no tuples with integer time."
-  [tupleseq]
-  (->> tupleseq
-      (map time)
-      (filter integer?)
-      (reduce max -1)))
-
 (defn reify-moment
-  "Given a tupleseq, replace all the nil time values with an integer
-  one greater than the max time value of all other tuples."
-  [tupleseq]
-  (let [next-time (inc (max-time tupleseq))]
-    (map (fn [[t e a v]] [(if (nil? t) next-time t) e a v])
-         tupleseq)))
+  "Given a tupleseq and an integer time, replace all the nil time
+  values with the moment number."
+  [tupleseq time]
+  (map (fn [[t e a v]] [(if (nil? t) time t) e a v])
+       tupleseq))
