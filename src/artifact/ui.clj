@@ -4,7 +4,7 @@
 	[clojure.contrib.json :only (json-str)]
 	[ring.util.response :only (response)]
 	compojure.core
-        artifact.triplestore
+        artifact.tuplestore
 	artifact.game
 	artifact.state))
 
@@ -47,8 +47,8 @@ game."
 
 (defn game-page [token]
   (dosync
-   (let [player-id (lookup-player @*store* token)
-	 player-name (lookup-player-name @*store* player-id)]
+   (let [player-id (lookup-player @*game* token)
+	 player-name (lookup-player-name @*game* player-id)]
      (response
       (to-html-str
        [:doctype! "html"]
@@ -80,13 +80,12 @@ game."
 
 (defn join-page [player-name]
   (dosync
-   (let [new-player-triples (add-player *store* player-name)
-         token ( )]
-     (alter *store* add-moment (add-player *store* player-name))
-     ;; TODO: Barf if we're not in the setup phase
-     (let [token (first (lookup-tokens-by-name @*store* player-name))]
-       {:status 303
-        :headers {"Location" (str "/game/" token)}}))))
+   (alter *game* update-game nil ["game" "new-player" player-name])
+   ;; TODO: What do we do if the add fails for some reason? E.g. there
+   ;; are too many players in the game?
+   (let [token (last (query-values @*game* [#"player:*" "token" :any]))]
+     {:status 303
+      :headers {"Location" (str "/game/" token)}})))
 
 
 

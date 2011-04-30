@@ -14,3 +14,9 @@ artifact namespaces so that circular dependencies can be avoided.")
   ;; lest there be a compile-time exception
   (defmacro break []))
 
+(defn not-implemented
+  "Throw an exception indicating that this functionality is not yet
+  implemented."
+  []
+  (throw (Exception. "Not yet implemented")))
+

@@ -3,19 +3,19 @@
 	[ring.middleware.params]
 	[ring.middleware.multipart-params]
 	[artifact.game :only (new-game)]
-	[artifact.state :only (*store*)]
+	[artifact.state :only (*game*)]
 	[clojure.contrib.json :only (read-json)]
 	compojure.core
 	artifact.ui
 	artifact.api
 	artifact.logging
-	artifact.triplestore)
+	artifact.tuplestore)
   (:require [compojure.handler :as handler]
 	    [compojure.route :as route])
   (:gen-class)
   (:refer-clojure :exclude [time]))
 
-(dosync (ref-set *store* new-game))
+(dosync (ref-set *game* new-game))
 
 (defroutes api-routes
   ;; TODO: extract token validation into middleware?
@@ -59,4 +59,4 @@
 
 (defn reset-game []
   (dosync
-   (ref-set *store* (new-game))))
+   (ref-set *game* (new-game))))

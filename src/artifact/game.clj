@@ -1,18 +1,18 @@
 (ns artifact.game
   "Implements the logic of the game"
   (:use artifact.tuplestore
-        [artifact.util :only (break)])
+        artifact.util)
   (:refer-clojure :exclude [time]))
 
 (defn- players
   "Given a game, returns a sequence of players in that game."
   [game]
-  (or (get-tuple-value game "game" "players") []))
+  (or (get-latest-value game "game" "players") []))
 
 (defn- pieces
   "Given a game, returns a sequence of pieces in that game."
   [game]
-  (or (get-tuple-value game "game" "pieces") []))
+  (or (get-latest-value game "game" "pieces") []))
 
 (defn- entities
   "Return a seq of entity ids"
@@ -22,7 +22,7 @@
 (defn- next-entity-ids
   "Returns the next n available ids for the specified entity in the specified game"
   [game owning-entity owning-attribute prefix n]
-  (let [entity-ids (set (get-tuple-value game owning-entity owning-attribute))]
+  (let [entity-ids (set (get-latest-value game owning-entity owning-attribute))]
     (take n
           (filter
            #(not (entity-ids %))
@@ -52,19 +52,19 @@
 (defn lookup-token-by-id
   "Given a player id and a game, return the player's token."
   [game id]
-  (get-tuple-value game id "token"))
+  (get-latest-value game id "token"))
 
 (defn lookup-tokens-by-name
   "Given a player name and a game, return a sequence of tokens for
 players with that name."
   [game name]
   (let [player-ids (map entity (query game [#"player:.*" "name" name]))]
-    (map #(get-tuple-value game % "token") player-ids)))
+    (map #(get-latest-value game % "token") player-ids)))
 
 (defn lookup-player-name
   "Given a player id and a game, return the player's name"
   [game id]
-  (get-tuple-value game id "name"))
+  (get-latest-value game id "name"))
 
 (defn lookup-player
   "Given a token and a game, return the corresponding player id from
@@ -74,13 +74,7 @@ players with that name."
        (first)
        (entity)))
 
-(defn- start-playing-action
-  "Given a player id, return the available-actions tuple that starts
-the game."
-  [player-id]
-  [player-id "available-actions" [["game" "phase" "playing"]]])
-
-(defn add-player
+(defn- add-player
   "Return the tupleseq needed to include a new player."
   [game name]
   (let [token (str (rand-int 1000000000))
@@ -88,23 +82,68 @@ the game."
         professor-id (next-professor-id game)
         ra-ids (next-ra-ids game 5)
         players (conj (players game) id)]
-    [[id "self" true]
-     [id "name" name]
-     [id "token" token]
-     [id "money" 3]
-     [id "pieces" (conj ra-ids professor-id)]
-     [id "ready" false]
-     [(first ra-ids) "location" "research-bar-ready"]
-     ["game" "players" players]]))
+    [[nil id "self" true]
+     [nil id "name" name]
+     [nil id "token" token]
+     [nil id "money" 3]
+     [nil id "pieces" (conj ra-ids professor-id)]
+     [nil id "ready" false]
+     [nil (first ra-ids) "location" "research-bar-ready"]
+     [nil "game" "players" players]]))
 
-(defn available-actions
-  ""
-  [tuplesource id]
-  (let [players (players tuplesource)]
-    (filter identity
-            [[id "ready" true]
-             (when (> (count players) 2)
-               ["game" "phase" "playing"])])))
+;;; Action functions
+;;
+;; These take a game, possibly some other arguments, and return the
+;; tuples that should be added to the game.
+
+(defn- record-action
+  "Emits the tuples that record the player and action for this moment."
+  [game player action]
+  [[nil "game" "action" action]
+   [nil "game" "actor" player]])
+
+(defn- ready?
+  "Returns true if the player is ready."
+  [game player]
+  (get-latest-value game player "ready"))
+
+(defn- player-actions
+  "Given a player, return the tuples that indicate what actions that
+  player can take."
+  [game player]
+  (let [players (players game)]
+    (concat 
+     (if (and (< 2 (count players) 5)
+              (every? #(ready? game %) players))
+       [[nil "game" "phase" "playing"]])
+     (when-not (ready? game player)
+       [[nil player "ready" true]]))))
+
+(defn- available-actions
+  "Returns the tuples indicating available actions for each player."
+  [game]
+  (let [players (players game)]
+    (map (fn [player]
+           [nil player "available-actions" (player-actions game player)])
+         players)))
+
+(defn- is-player?
+  "Returns true if the specified entity is a player."
+  [e]
+  (.startsWith e "player:"))
+
+(defn- new-tuples
+  "Given the game and an action, return all the new tuples that are a
+  consequence of that action."
+  [game action]
+  (let [[_ e a v] action]
+    (cond 
+     (= [e a] ["game" "new-player"]) (add-player game v)
+     ;; TODO: Also ensure that this is an available action for this
+     ;; player. 
+     (and (is-player? e) (= a "ready")) [[nil e a v]]
+     ;; TODO: add default action here
+     true (not-implemented))))
 
 ;;; Visibility
 
@@ -150,25 +189,24 @@ the game."
 
 (defn- consequents
   "Given some game state, return a list of functions that can generate
-new state (in the form of tuples)."
+  new state (in the form of tuples)."
   [game tupleseq]
   (let [[e a] (query game )]))
 
-(defn- new-tuples
-  "Given the game and some additional tuples, return all the new tuples
-that are a consequence of that state."
-  [game tupleseq]
-  (let [fns (consequents game tupleseq)]
-    (loop [f fns
-           acc [tupleseq]]
-      (let [res (apply (first f) game acc)]
-        (if (next fns)
-         (recur (next fns) (conj acc res)))))))
+(defn- modify-game
+  "Given a game and a sequence of functions that take a game, a
+  player, and an action, apply each function in turn, successively
+  concatenating the generated tuples onto the game for the next step."
+  [game fs]
+  (reduce (fn [game f] (concat game (f game))) game fs))
 
 (defn update-game
   "Updates the state of the game given a tuple being asserted by a
 given player."
-  [game player action]
-  (append game
-          (new-tuples game [["game" "action" action]
-                            ["game" "actor" player]])))
+  [game time player action]
+  {:pre ((tuple? action))}
+  (let [modified-game (modify-game game 
+                              [#(record-action % player action)
+                               #(new-tuples % action)
+                               available-actions])]
+   (reify-moment modified-game time)))

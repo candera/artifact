@@ -1,5 +1,5 @@
 (ns artifact.state
-  "Holds the state for the game."
-  (:use artifact.triplestore))
+  "Holds the state for the game.")
 
-(def ^{:dynamic true} *store* (ref nil))
+(def ^{:dynamic true} *game* (ref nil))
+(def ^{:dynamic true} *clock* (ref 0))
