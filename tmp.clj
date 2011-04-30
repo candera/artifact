@@ -163,3 +163,92 @@ true])
 (map triple? player3-triples)
 (filter (complement triple?) player3-triples)
 (def  store (add-moment store player3-triples))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def clock (atom 0))
+(defn now [] (swap! clock inc))
+
+(def game (new-game))
+(def game (update-game game (now) nil [nil "game" "new-player" "One"]))
+(def id1 (last (get-latest-value game "game" "players")))
+(def game (update-game game (now) id1 [nil id1 "ready" true]))
+(def game (update-game game (now) nil [nil "game" "new-player" "Two"]))
+(def id2 (last (get-latest-value game "game" "players")))
+(def game (update-game game (now) nil [nil "game" "new-player" "Three"]))
+(def id3 (last (get-latest-value game "game" "players")))
+(def game (update-game game (now) id2 [nil id2 "ready" true]))
+(def game (update-game game (now) id3 [nil id3 "ready" true]))
+
+(use 'clojure.pprint)
+(use 'artifact.tuplestore)
+(pprint (coalesce game))
+(pprint game)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(pprint (coalesce '([0 "game" "phase" "setup"] [1 "game" "action"
+         [nil "game" "new-player" "One"]] [1 "game" "actor" nil]
+         [1 "player:1" "self" true] [1 "player:1" "name" "One"]
+         [1 "player:1" "token" "478783384"] [1 "player:1" "money" 3]
+         [1 "player:1" "pieces" ("professor:1" "ra:1" "ra:2" "ra:3" "ra:4" "ra:5")]
+         [1 "player:1" "ready" false]
+         [1 "ra:1" "location" "research-bar-ready"]
+         [1 "game" "players" ["player:1"]]
+         [1 "player:1" "available-actions" ([nil "player:1" "ready"
+         true])] [2 "game" "action" [nil "player:1" "ready" true]]
+         [2 "game" "actor" "player:1"] [2 "player:1" "ready" true]
+         [2 "player:1" "available-actions" ()] [3 "game" "action"
+         [nil "game" "new-player" "Two"]] [3 "game" "actor" nil]
+         [3 "player:2" "self" true] [3 "player:2" "name" "Two"]
+         [3 "player:2" "token" "489025038"] [3 "player:2" "money" 3]
+         [3 "player:2" "pieces" ("professor:1" "ra:1" "ra:2" "ra:3" "ra:4" "ra:5")]
+         [3 "player:2" "ready" false]
+         [3 "ra:1" "location" "research-bar-ready"]
+         [3 "game" "players" ["player:1" "player:2"]]
+         [3 "player:1" "available-actions" ()]
+         [3 "player:2" "available-actions" ([nil "player:2" "ready"
+         true])] [4 "game" "action" [nil "game" "new-player" "Three"]]
+         [4 "game" "actor" nil] [4 "player:3" "self" true]
+         [4 "player:3" "name" "Three"]
+         [4 "player:3" "token" "514142623"] [4 "player:3" "money" 3]
+         [4 "player:3" "pieces" ("professor:1" "ra:1" "ra:2" "ra:3" "ra:4" "ra:5")]
+         [4 "player:3" "ready" false]
+         [4 "ra:1" "location" "research-bar-ready"]
+         [4 "game" "players" ["player:1" "player:2" "player:3"]]
+         [4 "player:1" "available-actions" ()]
+         [4 "player:2" "available-actions" ([nil "player:2" "ready"
+         true])]
+         [4 "player:3" "available-actions" ([nil "player:3" "ready"
+         true])] [5 "game" "action" [nil "player:2" "ready" true]]
+         [5 "game" "actor" "player:2"] [5 "player:2" "ready" true]
+         [5 "player:1" "available-actions" ()]
+         [5 "player:2" "available-actions" ()]
+         [5 "player:3" "available-actions" ([nil "player:3" "ready"
+         true])] [6 "game" "action" [nil "player:3" "ready" true]]
+         [6 "game" "actor" "player:3"] [6 "player:3" "ready" true]
+         [6 "player:1" "available-actions" ([nil "game" "phase" "playing"])]
+         [6 "player:2" "available-actions" ([nil "game" "phase" "playing"])]
+         [6 "player:3" "available-actions" ([nil "game" "phase" "playing"])]
+         [7 "game" "action" [nil "game" "new-player" "Four"]]
+         [7 "game" "actor" nil] [7 "player:4" "self" true]
+         [7 "player:4" "name" "Four"]
+         [7 "player:4" "token" "252873007"] [7 "player:4" "money" 3]
+         [7 "player:4" "pieces" ("professor:1" "ra:1" "ra:2" "ra:3" "ra:4" "ra:5")]
+         [7 "player:4" "ready" false]
+         [7 "ra:1" "location" "research-bar-ready"]
+         [7 "game" "players"
+         ["player:1" "player:2" "player:3" "player:4"]]
+         [7 "player:1" "available-actions" ()]
+         [7 "player:2" "available-actions" ()]
+         [7 "player:3" "available-actions" ()]
+         [7 "player:4" "available-actions" ([nil "player:4" "ready"
+         true])] [8 "game" "action" [nil "player:4" "ready" true]]
+         [8 "game" "actor" "player:4"] [8 "player:4" "ready" true]
+         [8 "player:1" "available-actions" ([nil "game" "phase" "playing"])]
+         [8 "player:2" "available-actions" ([nil "game" "phase" "playing"])]
+         [8 "player:3" "available-actions" ([nil "game" "phase" "playing"])]
+         [8 "player:4" "available-actions" ([nil "game" "phase" "playing"])])))
+
+
