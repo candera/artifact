@@ -23,24 +23,12 @@ of the newly added player"
   (some (fn [[_ e a v]] (= [e a v] action))
         (get-latest-value tupleseq id "available-actions")))
 
-(defn- scenario-clause
-  "Given a pair, if the first item is :assert, emits a literal underscore and te second item. Otherwise, emits the pair as-is."
-  [[a b]]
-  (if (= a :assert) ['_ b] [a b]))
-
-(defn- scenario-clauses
-  "Walks across items two at a time, calling gen-scenario-clause on
-each pair, creating a vector of bindings suitable for use in
-defscenario."
-  [items]
-  (reduce into [] (map scenario-clause (partition 2 items))))
-
 (defmacro defscenario
   "Generates a test of the type shown elsewhere in this file by
 emitting a let that has bindings interspersed with assertions."
   [name & body]
   `(deftest ~name
-     (let ~(scenario-clauses body))))
+     (let [~@body])))
 
 (defn- can-become-ready?
   "Returns true if the specified player has the [id \"ready\" true]
@@ -67,32 +55,32 @@ action available. "
 (defscenario add-player-sequence
   game (new-game)
   [game id1] (add-player game "One")
-  :assert (is (can-become-ready? game id1))
+  _ (is (can-become-ready? game id1))
   ;; Game can't start with only one player, and him not even ready
-  :assert (is (not (can-start-game? game [id1])))
+  _ (is (not (can-start-game? game [id1])))
   game (become-ready game id1)
   ;; Then, once player one is ready, becoming ready is no longer an
   ;; available action, and the game still can't start.
-  :assert (is (not (can-become-ready? game id1)))
-  :assert (is (not (can-start-game? game [id1])))
+  _ (is (not (can-become-ready? game id1)))
+  _ (is (not (can-start-game? game [id1])))
   [game id2] (add-player game "Two")
-  :assert (is (can-become-ready? game id2))
-  :assert (is (not (can-start-game? game [id1 id2])))
+  _ (is (can-become-ready? game id2))
+  _ (is (not (can-start-game? game [id1 id2])))
   [game id3] (add-player game "Three")
-  :assert (is (can-become-ready? game id3))
-  :assert (is (not (can-start-game? game [id1 id2 id3])))
+  _ (is (can-become-ready? game id3))
+  _ (is (not (can-start-game? game [id1 id2 id3])))
   ;; Second players becomes ready, but game can't start
   game (become-ready game id2)
-  :assert (is (not (can-start-game? game [id1 id2 id3])))
+  _ (is (not (can-start-game? game [id1 id2 id3])))
   ;; All players ready, game can start
   game (become-ready game id3)
-  :assert (is (can-start-game? game [id1 id2 id3]))
+  _ (is (can-start-game? game [id1 id2 id3]))
   [game id4] (add-player game "Four")
-  :assert (is (not (can-start-game? game [id1 id2 id3 id4])))
+  _ (is (not (can-start-game? game [id1 id2 id3 id4])))
   ;; Fourth player becomes ready, game can start
   game (become-ready game id4)
-  :assert (is (can-start-game? game [id1 id2 id3 id4]))
-o  ;; TODO: Assert that fifth player cannot be added
+  _ (is (can-start-game? game [id1 id2 id3 id4]))
+  ;; TODO: Assert that fifth player cannot be added
   )
 
 
