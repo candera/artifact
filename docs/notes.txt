@@ -5,6 +5,11 @@
 **** Record a version number as well
 ***** This can simply be an attribute of the global entity
 ***** Alternately, can hide it in the state transition URLs
+***** Or put time in the tuples
+This was Stu's suggestion. We implemented it, and it simplifies things
+a lot. Everything winds up being just operations on sequences of
+tuples. The one remaining question is how to surface that to the
+client - should they get triples or 4-tuples?
 **** Somehow have a list of functions to act on transitions
 ***** Run the list of functions whenever there's a change
 ****** Run until no function produces a new state?
