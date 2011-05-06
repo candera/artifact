@@ -77,19 +77,22 @@ players with that name."
 (defn- add-player
   "Return the tupleseq needed to include a new player."
   [game name]
-  (let [token (str (rand-int 1000000000))
-        id (next-player-id game)
-        professor-id (next-professor-id game)
-        ra-ids (next-ra-ids game 5)
-        players (conj (players game) id)]
-    [[nil id "self" true]
-     [nil id "name" name]
-     [nil id "token" token]
-     [nil id "money" 3]
-     [nil id "pieces" (conj ra-ids professor-id)]
-     [nil id "ready" false]
-     [nil (first ra-ids) "location" "research-bar-ready"]
-     [nil "game" "players" players]]))
+  (let [players (players game)]
+    (if (> (count players) 3)
+      (throw ???)
+      (let [token (str (rand-int 1000000000))
+            id (next-player-id game)
+            professor-id (next-professor-id game)
+            ra-ids (next-ra-ids game 5)
+            players (conj (players game) id)]
+        [[nil id "self" true]
+         [nil id "name" name]
+         [nil id "token" token]
+         [nil id "money" 3]
+         [nil id "pieces" (conj ra-ids professor-id)]
+         [nil id "ready" false]
+         [nil (first ra-ids) "location" "research-bar-ready"]
+         [nil "game" "players" players]]))))
 
 ;;; Action functions
 ;;
@@ -186,12 +189,6 @@ players with that name."
     (->> game
          (filter #(or (owned-entities (entity %))
                       (is-public? %))))))
-
-(defn- consequents
-  "Given some game state, return a list of functions that can generate
-  new state (in the form of tuples)."
-  [game tupleseq]
-  (let [[e a] (query game )]))
 
 (defn- modify-game
   "Given a game and a sequence of functions that take a game, a
