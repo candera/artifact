@@ -252,3 +252,62 @@ true])
          [8 "player:4" "available-actions" ([nil "game" "phase" "playing"])])))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(in-ns 'logic-tutorial.tut1)
+
+(fact parent 'Craig 'Ellen)
+(fact parent 'Craig 'Susan)
+(fact parent 'Alice 'Ellen)
+(fact parent 'Alice 'Susan)
+(fact parent 'Edwin 'Craig)
+(fact parent 'Maddy 'Craig)
+(fact parent 'Edwin 'Kristin)
+(fact parent 'Maddy 'Kristin)
+(fact female 'Kristin)
+
+(run* [q] (female q))
+
+(defn sibling [x y]
+  (exist [p]
+         (parent p x)
+         (parent p y)))
+
+(defn sister [x y]
+  (all
+   (sibling x y)
+   (female x)))
+
+(run* [q] (sister q 'Craig))
+
+(defn aunt [adult kid]
+  (exist [p]
+         (sibling p adult)
+         (parent p kid)
+         (female adult)))
+
+
+(run* [q] (sibling 'Craig q))
+
+(run* [q] (aunt 'Kristin q))
+(run* [q] (aunt q 'Ellen))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(use 'artifact.error)
+
+
+
+(try
+  (error "oh noes!")
+  (error-catch e
+               (str "Barfed with: " e)))
+
+(try (error "oh noes!")
+     (catch java.lang.Throwable t__2372__auto__
+       (if (clojure.core/satisfies? artifact.error/ApplicationError t__2372__auto__)
+         (let* [e (artifact.error/data t__2372__auto__)]
+               (str "Barfed with: " e))
+         "Rethrown")))
+
+
+(error "foo")
