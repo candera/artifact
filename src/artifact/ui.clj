@@ -80,7 +80,8 @@ game."
 
 (defn join-page [player-name]
   (dosync
-   (alter *game* update-game nil ["game" "new-player" player-name])
+   (alter *clock* inc)
+   (alter *game* update-game *clock* ["game" "new-player" player-name])
    ;; TODO: What do we do if the add fails for some reason? E.g. there
    ;; are too many players in the game?
    (let [token (last (query-values @*game* [#"player:*" "token" :any]))]
