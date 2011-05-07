@@ -311,3 +311,89 @@ true])
 
 
 (error "foo")
+
+(try
+  (error "oh noes!")
+  (catch Exception e (str "Barfed with exception: " e))
+  user/foo)
+
+(try (error "oh noes!")
+     (clojure.core/when
+      (clojure.core/seq user/stdcatches)
+      (catch Exception e
+        (str "Barfed with exception: " e)))
+     user/foo)
+
+(try (error "oh noes!")
+     (catch Exception e (str "Barfed with exception: " e))
+     (catch java.lang.Throwable t__1932__auto__
+       (if (clojure.core/satisfies? user/ApplicationError t__1932__auto__)
+         (clojure.core/let [nil (user/data t__1932__auto__)])
+         (throw t__1932__auto__))))
+
+(try
+  (error "oh noes!")
+  (catch java.lang.Throwable t__1932__auto__
+    (if (clojure.core/satisfies? user/ApplicationError t__1932__auto__)
+      (clojure.core/let [nil (user/data t__1932__auto__)])
+      (throw t__1932__auto__))))
+
+
+(app-try
+ (error "oh noes!")
+ (app-catch e
+            (str "Barfed with: " e))
+ (catch Exception e
+   (str "Barfed with exception: " e)))
+
+
+(defn- classify-clause [clause]
+  (case (first clause)
+        'app-catch 1
+        'catch 2
+        3))
+
+(defmacro app-try [& body]
+  (let [[statements [_ name & handlers] standard-catches] (partition-by classify-clause body)]
+    `(try
+       ~@statements
+       ~@standard-catches
+       (catch Throwable t#
+          (if (satisfies? ApplicationError t#)
+            (let [~name (data t#)] ~@handlers)
+            (throw t#)))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(use 'artifact.error)
+
+(app-try
+ (println "Got here!")
+ (app-throw "oh noes!")
+ (println "Never got here!")
+ (app-catch e
+            (str "Barfed with: " e))
+ (catch Exception e
+   (str "Barfed with exception: " e)))
+
+(try
+  (println "Got here!")
+  (app-throw "oh noes!")
+  (println "Never got here!")
+  (catch Exception e
+    (str "Barfed with exception: " e))
+  (catch java.lang.Throwable t__2186__auto__
+    (if (clojure.core/satisfies? artifact.error/ApplicationError t__2186__auto__)
+      (clojure.core/let [e (artifact.error/data t__2186__auto__)]
+                        (str "Barfed with: " e))
+      (throw t__2186__auto__))))
+
+(try
+  (println "Got here!")
+  (app-throw "oh noes!")
+  (println "Never got here!")
+  (catch Exception e (str "Barfed with exception: " e))
+  (catch java.lang.Throwable t__2154__auto__
+    (if (clojure.core/satisfies? artifact.error/ApplicationError t__2154__auto__)
+      (clojure.core/let [nil (artifact.error/data t__2154__auto__)])
+      (throw t__2154__auto__))))
