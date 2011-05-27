@@ -76,11 +76,13 @@ players with that name."
        (entity)))
 
 (defn- add-player
-  "Return the tupleseq needed to include a new player."
+  "Return the tupleseq needed to include a new player.
+  Raises ::cannot-add-more-players if there are already four players
+  in the game."
   [game name]
   (let [current-players (players game)]
-    (if (> (count players) 3)
-      (app-throw ::game-full)
+    (if (> (count current-players) 3)
+      (app-throw ::cannot-add-more-players)
       (let [token (str (rand-int 1000000000))
             id (next-player-id game)
             professor-id (next-professor-id game)
