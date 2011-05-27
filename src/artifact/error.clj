@@ -37,7 +37,8 @@
      (normal-statement)
      (when true (app-throw :whatever))
      (app-catch d
-        (println d))  ; prints :whatever
+        (println d)   ; prints :whatever
+        (+ 2 3))      ; and evaluates to 5
      (catch Exception e
         (println \"Some other exception was thrown\")))
 
