@@ -1,5 +1,5 @@
-(defproject artifact "1.0.0-SNAPSHOT"
-  :description "FIXME: write"
+(defproject artifact "0.1.0-SNAPSHOT"
+  :description "The server side of the game Artifact, an archaeology-themed board game. To run it, fire up the server and connect to it with a browser."
   :dependencies [[org.clojure/clojure "1.2.0"]
                  [org.clojure/clojure-contrib "1.2.0"]
 		 [ring/ring-jetty-adapter "0.3.7"]
