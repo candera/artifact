@@ -1,7 +1,8 @@
 (ns artifact.game
   "Implements the logic of the game"
   (:use artifact.tuplestore
-        artifact.util)
+        artifact.util
+        artifact.error)
   (:refer-clojure :exclude [time]))
 
 (defn- players
@@ -77,14 +78,14 @@ players with that name."
 (defn- add-player
   "Return the tupleseq needed to include a new player."
   [game name]
-  (let [players (players game)]
+  (let [current-players (players game)]
     (if (> (count players) 3)
-      (throw ???)
+      (app-throw ::game-full)
       (let [token (str (rand-int 1000000000))
             id (next-player-id game)
             professor-id (next-professor-id game)
             ra-ids (next-ra-ids game 5)
-            players (conj (players game) id)]
+            new-players (conj current-players id)]
         [[nil id "self" true]
          [nil id "name" name]
          [nil id "token" token]
@@ -92,7 +93,7 @@ players with that name."
          [nil id "pieces" (conj ra-ids professor-id)]
          [nil id "ready" false]
          [nil (first ra-ids) "location" "research-bar-ready"]
-         [nil "game" "players" players]]))))
+         [nil "game" "players" new-players]]))))
 
 ;;; Action functions
 ;;
