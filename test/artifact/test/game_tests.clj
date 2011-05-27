@@ -2,6 +2,7 @@
   (:use [artifact.game] :reload
         [artifact.tuplestore]
         [artifact.state]
+        [artifact.test.common]
         [clojure.test])
   (:refer-clojure :exclude [time]))
 
@@ -80,26 +81,7 @@ action available. "
   ;; Fourth player becomes ready, game can start
   game (become-ready game id4)
   _ (is (can-start-game? game [id1 id2 id3 id4]))
-  ;; TODO: Assert that fifth player cannot be added
-  )
+  ;; Fifth player cannot be added
+  _ (throws :artifact.game/cannot-add-more-players (add-player game "Five")))
 
 
-  
-
-;; (deftest game-does-not-start-with-two-players
-;;   (let [store (new-game)
-;;         player1-tuples (add-player store "Player One")
-;;         store (add-moment store player1-tuples)
-;;         player2-tuples (add-player store "Player Two")
-;;         store (add-moment store player2-tuples)]
-;;     (is (empty? (get-tuple-value store "player:1" "available-actions")))))
-
-;; (deftest game-can-start-with-three-ready-players
-;;   (let [store (new-game)
-;;         store (add-moment store (add-player store "Player One"))
-;;         store (add-moment store (add-player store "Player Two"))
-;;         store (add-moment store (add-player store "Player Three"))]
-;;     (is (every? #(= % [["game" "phase" "playing"]])
-;;                 (query-values store ["player:*" "available-actions" "*"])))))
-
-;; (deftest game-cannot-start-with-four-unready-players)
