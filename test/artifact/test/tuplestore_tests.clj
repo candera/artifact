@@ -1,10 +1,8 @@
 (ns artifact.test.tuplestore-tests
   (:refer-clojure :exclude [time])
   (:use [artifact.tuplestore]
+        [artifact.test.common]
         [clojure.test]))
-
-(defmacro throws [x & body]
-  `(is (try ~@body false (catch ~x ~'_ true))))
 
 (defn- set=
   "Returns true if the members of coll1 and coll2 are the same by
