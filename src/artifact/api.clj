@@ -4,7 +4,9 @@
 	artifact.tuplestore
 	artifact.state
 	artifact.game
-	artifact.logging))
+	artifact.logging
+        artifact.error)
+  (:refer-clojure :exclude [time]))
 
 (defn- hoist-key
   "Takes a tuple of the form [[e a] v] and turns it into [e a v]."
@@ -22,6 +24,12 @@
     :body (json-str
 	   (map hoist-key (sort (get-visible-tuples @*game* token))))}))
 
+;; Contains the list of error messages to send back to the client,
+;; based on what's thrown by the app.
+(def ^{:private true} error-map
+  {:artifact.game/cannot-add-more-players
+   "You cannot join the game because there would be too many players"})
+
 (defn api-post
   "Handles posts from the game client, which should specify a tuple to
   assert."
@@ -31,11 +39,16 @@
   ;; TODO: Handle case where game state has moved on and action is
   ;; no longer available
   (debug "Asserted by " token " : " action)
-  (dosync
-   (let [player (lookup-player *game* token)]
-    (alter *clock* inc)
-    (alter *game* update-game *clock* player action)))
-  ;; Return an empty string so that something gets rendered back to
-  ;; the client.
-  ;; TODO: Modify to return the new state
-  "")
+  (app-try
+   (dosync
+    (let [player (lookup-player *game* token)]
+      (alter *clock* inc)
+      (alter *game* update-game *clock* player action))
+    ;; Return an empty string so that something gets rendered back to
+    ;; the client.
+    ;; TODO: Modify to return the new state
+    "")
+   (app-catch e
+              (do (debug "Error when updating game state: " e))
+              {:status 400
+               :body (get error-map e "Unanticipated error")})))
