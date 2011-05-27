@@ -361,11 +361,29 @@ true])
        (catch Throwable t#
           (if (satisfies? ApplicationError t#)
             (let [~name (data t#)] ~@handlers)
-            (throw t#)))))))
+            (throw t#))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (use 'artifact.error)
+
+(app-try
+ (println "Got here!")
+ (throw (Exception. "oh noes!"))
+ (println "Never got here!")
+ (app-catch e
+            (str "Barfed with: " e))
+ (catch Exception x
+   (str "Regular exception: " x)))
+
+(try
+  (println "Got here!")
+  (app-throw "oh noes!")
+  (println "Never got here!")
+  (catch java.lang.Throwable t__1841__auto__
+    (if (clojure.core/satisfies? artifact.error/ApplicationError t__1841__auto__)
+      "Satisfied"
+      "Not satisfied")))
 
 (app-try
  (println "Got here!")
@@ -375,6 +393,12 @@ true])
             (str "Barfed with: " e))
  (catch Exception e
    (str "Barfed with exception: " e)))
+
+(try
+  (println "Got here!")
+  (app-throw "oh noes!")
+  (println "Never got here!")
+  (catch Throwable e (str "Barfed with exception: " e)))
 
 (try
   (println "Got here!")
@@ -397,3 +421,28 @@ true])
     (if (clojure.core/satisfies? artifact.error/ApplicationError t__2154__auto__)
       (clojure.core/let [nil (artifact.error/data t__2154__auto__)])
       (throw t__2154__auto__))))
+
+(+ 2 3)                       ; a harmless no-op, just so
+                                        ; we're doing something else
+                                        ; in this function.
+
+(defn- classify-clause
+  "Classifies a clause in an app-try statement according to how it
+  needs to be emitted into the macro expansion."
+  [clause]
+  (if (seq? clause)
+    (case (first clause)
+          'app-catch :app-catch
+          'catch :catch
+          :other)
+    :other))
+
+(classify-clause false)
+
+(map classify-clause
+              '[(+ 2 3)
+                (app-throw :test-value)
+                false
+                (app-catch e
+                           e)
+                (catch FileNotFoundException x x)])
