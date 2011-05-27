@@ -15,7 +15,7 @@
   (:gen-class)
   (:refer-clojure :exclude [time]))
 
-(dosync (ref-set *game* new-game))
+(dosync (ref-set *game* (new-game)))
 
 (defroutes api-routes
   ;; TODO: extract token validation into middleware?
