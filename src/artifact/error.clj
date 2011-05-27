@@ -1,3 +1,8 @@
+;;; One annoying thing about this approach is that it breaks if you
+;;; reload this file. It's probably something to do with a new type
+;;; getting generated for ApplicationError, and the satisfies? call
+;;; not picking up on that fact. If that happens, reswank.
+
 (ns artifact.error
   "Provides the ability to signal application-level errors without
   having to define classes or other annoying stuff.")
@@ -16,10 +21,12 @@
   "Classifies a clause in an app-try statement according to how it
   needs to be emitted into the macro expansion."
   [clause]
-  (case (first clause)
-        'app-catch :app-catch
-        'catch :catch
-        :other))
+  (if (seq? clause)
+    (case (first clause)
+          'app-catch :app-catch
+          'catch :catch
+          :other)
+    :other))
 
 (defmacro app-try
   "Expands into a try-catch block that catch both normal Java
