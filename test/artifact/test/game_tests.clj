@@ -42,16 +42,12 @@ action available. "
   [tupleseq ids]
   (every? #(has-action? tupleseq % ["game" "phase" "playing"]) ids))
 
-(def ^{:private true} clock (atom 0))
-
-(defn- now [] (swap! clock inc))
-
 (defn- add-player [game name]
-  (let [game (update-game game (now) nil [nil "game" "new-player" name])]
+  (let [game (update-game game nil [nil "game" "new-player" name])]
     [game (player-by-name game name)]))
 
 (defn- become-ready [game id]
-  (update-game game (now) id [nil id "ready" true]))
+  (update-game game id [nil id "ready" true]))
 
 (defscenario add-player-sequence
   game (new-game)

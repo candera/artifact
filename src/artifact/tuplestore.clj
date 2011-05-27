@@ -158,9 +158,20 @@ and have an attribute of exactly \"name\"."
   {:pre ((single? x))}
   (first x))
 
-(defn reify-moment
-  "Given a tupleseq and an integer time, replace all the nil time
-  values with the moment number."
-  [tupleseq time]
-  (map (fn [[t e a v]] [(if (nil? t) time t) e a v])
-       tupleseq))
+(defn- max-time
+  "Given a tupleseq, return the maximum time, or -1 if the seq
+  contains no tuples with integer time."
+  [tupleseq]
+  (->> tupleseq
+       (map time)
+       (filter integer?)
+       (reduce max -1)))
+
+(defn update-nil-time
+  "Given a tupleseq replace all the nil time values with a time one
+  greater than the largest existing time, or zero if there are no
+  non-nil times."
+  [tupleseq]
+  (let [new-time (inc (max-time tupleseq))]
+    (map (fn [[t e a v]] [(if (nil? t) new-time t) e a v])
+         tupleseq)))

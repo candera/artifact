@@ -202,11 +202,12 @@ players with that name."
 
 (defn update-game
   "Updates the state of the game given a tuple being asserted by a
-given player."
-  [game time player action]
+  given player. Any new tuples with time nil will be updated to have a
+  time one greater than the latest time in the existing tuples."
+  [game player action]
   {:pre ((tuple? action))}
   (let [modified-game (modify-game game 
-                              [#(record-action % player action)
-                               #(new-tuples % action)
-                               available-actions])]
-   (reify-moment modified-game time)))
+                                   [#(record-action % player action)
+                                    #(new-tuples % action)
+                                    available-actions])]
+    (update-nil-time modified-game)))

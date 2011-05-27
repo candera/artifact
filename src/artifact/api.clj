@@ -42,8 +42,7 @@
   (app-try
    (dosync
     (let [player (lookup-player *game* token)]
-      (alter *clock* inc)
-      (alter *game* update-game *clock* player action))
+      (alter *game* update-game player action))
     ;; Return an empty string so that something gets rendered back to
     ;; the client.
     ;; TODO: Modify to return the new state
