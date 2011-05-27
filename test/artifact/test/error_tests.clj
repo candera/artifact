@@ -46,3 +46,12 @@
          (app-try
           (throwing-fn :test-value)
           (app-catch e e)))))
+
+(deftest app-catch-can-contain-multiple-statements
+  (is (= 2 (let [a (atom 0)]
+             (app-try
+              (app-throw "boom!")
+              (app-catch _
+                         (swap! a inc)
+                         (swap! a inc)
+                         @a))))))
