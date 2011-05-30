@@ -6,7 +6,10 @@
 	compojure.core
         artifact.tuplestore
 	artifact.game
-	artifact.state))
+	artifact.state
+        artifact.error
+        artifact.logging)
+  (:refer-clojure :exclude [time]))
 
 ;;; Helpers
 
@@ -33,17 +36,19 @@ game."
 
 ;;; Endpoints
 
-(def index
-  [:html
-   [:head
-    [:title "Artifact (Pre-Alpha)"]]
-   [:body {:onload "document.join.name.focus()"}
-    [:p "Welcome to artifact! Actual functionality still under development."]
-    [:p "Join a game by entering your name here."]
-    [:form {:action "/join" :method "post" :name "join"}
-     "Name:"
-     [:input {:type "text" :name "name"}]
-     [:input {:type "submit" :value "Join"}]]]])
+(defn index [& messages]
+  (to-html-str
+   [:html
+    [:head
+     [:title "Artifact (Pre-Alpha)"]]
+    [:body {:onload "document.join.name.focus()"}
+     [:p "Welcome to artifact! Actual functionality still under development."]
+     (map (fn [m] [:p {:class "flash"} m]) messages)
+     [:p "Join a game by entering your name here."]
+     [:form {:action "/join" :method "post" :name "join"}
+      "Name:"
+      [:input {:type "text" :name "name"}]
+      [:input {:type "submit" :value "Join"}]]]]))
 
 (defn game-page [token]
   (dosync
@@ -78,14 +83,19 @@ game."
 	 [:textarea {:id "gameState" :readonly "readonly" :rows 20}
 	  "diagnostic information is displayed here"]]])))))
 
+(def ^{:private true} error-messages
+  {:artifact.game/cannot-add-more-players "The game is already full."})
+
 (defn join-page [player-name]
-  (dosync
-   (alter *game* update-game nil [nil "game" "new-player" player-name])
-   ;; TODO: What do we do if the add fails for some reason? E.g. there
-   ;; are too many players in the game?
-   (let [token (last (query-values @*game* [:any #"player:*" "token" :any]))]
-     {:status 303
-      :headers {"Location" (str "/game/" token)}})))
+  (app-try
+   (dosync
+    (alter *game* update-game nil [nil "game" "new-player" player-name])
+    (let [token (last (query-values @*game* [:any #"player:.*" "token" :any]))]
+      {:status 303
+       :headers {"Location" (str "/game/" token)}}))
+   (app-catch e
+              (debug "Error when" player-name "tried to join game:" e)
+              (index (get error-messages e "Unrecognized error")))))
 
 
 

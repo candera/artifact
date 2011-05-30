@@ -71,7 +71,7 @@ players with that name."
   "Given a token and a game, return the corresponding player id from
   that game."
   [game token]
-  (->> (query game [:any "token" token])
+  (->> (query game [:any :any "token" token])
        (first)
        (entity)))
 
@@ -155,10 +155,10 @@ players with that name."
 
 (def ^{:private true :doc "Defines the visibility rules for the game"}
   acl-rules
-  [["*"        "*"     :public]
-   ["player:*" "*"     :private]
-   ["player:*" "ready" :public]
-   ["player:*" "name"  :public]])
+  [[:any        :any    :public]
+   ["player:.*" :any    :private]
+   ["player:.*" "ready" :public]
+   ["player:.*" "name"  :public]])
 
 (defn new-game
   "Sets up a game with the data it needs in order to bootstrap."
@@ -170,7 +170,7 @@ players with that name."
   matches, and nil otherwise."
   [tuple rule]
   (let [[espec aspec vis] rule
-	pred (build-spec-filter [espec aspec "*"])]
+	pred (build-spec-filter [:any espec aspec :any])]
     (when (pred tuple) vis)))
 
 (defn- is-public?

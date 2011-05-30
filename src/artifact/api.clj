@@ -8,12 +8,6 @@
         artifact.error)
   (:refer-clojure :exclude [time]))
 
-(defn- hoist-key
-  "Takes a tuple of the form [[e a] v] and turns it into [e a v]."
-  [tuple]
-  (let [[[e a] v] tuple]
-    [e a v]))
-
 (defn api-get
   "Handles queries from the game client by returning the list of
   tuples that are visible to that client (based on the token provided
@@ -22,7 +16,7 @@
   (dosync
    {:mime-type "application/json"
     :body (json-str
-	   (map hoist-key (sort (get-visible-tuples @*game* token))))}))
+	   (sort (get-visible-tuples @*game* token)))}))
 
 ;; Contains the list of error messages to send back to the client,
 ;; based on what's thrown by the app.
