@@ -81,3 +81,18 @@ action available. "
   _ (throws :artifact.game/cannot-add-more-players (add-player game "Five")))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(deftest lookup-player-works
+  (let [game [[0 "player:1" "token" "p1-token"]
+              [1 "player:2" "token" "p2-token"]]]
+    (is (nil? (lookup-player game "invalid-token")))
+    (is (= "player:1" (lookup-player game "p1-token")))
+    (is (= "player:2" (lookup-player game "p2-token")))))
+
+(deftest get-visible-tuples-works
+  (is (= []
+         (get-visible-tuples
+          [[0 "player:1" "token" "p1-token"]]
+          "p2-token"))))
+

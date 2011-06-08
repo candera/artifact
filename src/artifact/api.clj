@@ -16,7 +16,7 @@
   (dosync
    {:mime-type "application/json"
     :body (json-str
-	   (sort (get-visible-tuples @*game* token)))}))
+	   (get-visible-tuples (coalesce @*game*) token))}))
 
 ;; Contains the list of error messages to send back to the client,
 ;; based on what's thrown by the app.

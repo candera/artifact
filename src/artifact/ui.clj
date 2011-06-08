@@ -37,18 +37,17 @@ game."
 ;;; Endpoints
 
 (defn index [& messages]
-  (to-html-str
-   [:html
-    [:head
-     [:title "Artifact (Pre-Alpha)"]]
-    [:body {:onload "document.join.name.focus()"}
-     [:p "Welcome to artifact! Actual functionality still under development."]
-     (map (fn [m] [:p {:class "flash"} m]) messages)
-     [:p "Join a game by entering your name here."]
-     [:form {:action "/join" :method "post" :name "join"}
-      "Name:"
-      [:input {:type "text" :name "name"}]
-      [:input {:type "submit" :value "Join"}]]]]))
+  [:html
+   [:head
+    [:title "Artifact (Pre-Alpha)"]]
+   [:body {:onload "document.join.name.focus()"}
+    [:p "Welcome to artifact! Actual functionality still under development."]
+    (map (fn [m] [:p {:class "flash"} m]) messages)
+    [:p "Join a game by entering your name here."]
+    [:form {:action "/join" :method "post" :name "join"}
+     "Name:"
+     [:input {:type "text" :name "name"}]
+     [:input {:type "submit" :value "Join"}]]]])
 
 (defn game-page [token]
   (dosync
@@ -74,6 +73,9 @@ game."
 	 [:script {:src "/script/game.js"} ""]]
 	[:body
 	 [:div {:id "setup-ui"}
+          [:button {:id "start-game" :click "javascript:startGame()"
+                    :disabled "disabled"}
+           "Start game!"]
 	  [:table {:id "joined-players"}
 	   [:tr [:th "Player"] [:th "State"]] ""]]
 	 [:div {:id "playing-ui"}

@@ -155,10 +155,10 @@ players with that name."
 
 (def ^{:private true :doc "Defines the visibility rules for the game"}
   acl-rules
-  [[:any        :any    :public]
-   ["player:.*" :any    :private]
-   ["player:.*" "ready" :public]
-   ["player:.*" "name"  :public]])
+  [[:any         :any    :public]
+   [#"player:.*" :any    :private]
+   [#"player:.*" "ready" :public]
+   [#"player:.*" "name"  :public]])
 
 (defn new-game
   "Sets up a game with the data it needs in order to bootstrap."
