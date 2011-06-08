@@ -446,3 +446,14 @@ true])
                 (app-catch e
                            e)
                 (catch FileNotFoundException x x)])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(in-ns 'artifact.game)
+
+(def tuple [0 "player:1"])
+(->> acl-rules
+     (map #(rule-visibility tuple %))
+     (filter identity)		; Remove nils
+     (last)
+     (= :public))
