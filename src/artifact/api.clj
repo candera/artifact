@@ -35,7 +35,7 @@
   (debug "Asserted by " token " : " action)
   (app-try
    (dosync
-    (let [player (lookup-player *game* token)]
+    (let [player (lookup-player @*game* token)]
       (alter *game* update-game player action))
     ;; Return an empty string so that something gets rendered back to
     ;; the client.

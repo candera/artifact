@@ -76,13 +76,13 @@ function diff(before, after) {
 function postTuple(e, a, v) {
     $.ajax(gameStateUrl, 
            {contentType: "application/json", 
-            data: JSON.stringify([nil, e, a, v]),
+            data: JSON.stringify([null, e, a, v]),
             processData: false,
             type: "POST"}); 
 }
 
 function readyButtonCell(state, player, self) {
-    var cell = $("<td>");
+    var cell = $("<td class='player-readiness'>");
     cell.attr("player", player);
 
     var ready = getTupleValue(state, player, "ready");
@@ -96,9 +96,7 @@ function readyButtonCell(state, player, self) {
             button.text("Start game")
                 .click(function () {
                     postTuple(player, "ready", true);
-                    button.remove();
-                    cell.attr("state", "ready");
-                    cell.text("Ready");
+                    cell.text("Getting ready...");
                 }));
     }
     else {
@@ -136,13 +134,20 @@ function addWatch(e, a, f) {
 
 function fireWatches(oldState, newState) {
     for (var i = 0; i < watches.length; ++i) {
-	watch = watches[i];
+        watch = watches[i];
         var oldVal = getTupleValue(oldState, watch.e, watch.a);
         var newVal = getTupleValue(newState, watch.e, watch.a);
 
         if (oldVal != newVal) {
             watch.f(oldState, newState, oldVal, newVal);
         }
+    }
+}
+
+function setPlayerReady(player, ready) {
+    if (ready) { 
+	console.log("Setting ready to ", ready, "for player ", player);
+	$("#joined-players tr[player-id='" + player + "'] td.player-readiness").text("Ready");
     }
 }
 
@@ -159,6 +164,8 @@ function watchPlayers(oldState, newState, oldPlayers, newPlayers) {
         
         var name = getTupleValue(newState, addition, "name");
         var self = getTupleValue(newState, addition, "self");
+
+        addWatch(addition, "ready", function(os, ns, ov, nv) { setPlayerReady(addition, nv); }); 
 
         $("#joined-players")
             .append(
@@ -194,38 +201,38 @@ function watchPhase(oldState, newState, oldPhase, newPhase) {
 
     if (newPhase == "setup") {
         updateUISetup(gameState, newState);
-	addWatch(me(newState), "available-actions", watchActions);
-	addWatch("game", "players", watchPlayers);
+        addWatch(me(newState), "available-actions", watchActions);
+        addWatch("game", "players", watchPlayers);
     }
 }
 
 function tupleMatches(tuple, e, a, v) {
     return entity(tuple) == e && 
-	att(tuple) == a &&
-	value(tuple) == v;
+        att(tuple) == a &&
+        value(tuple) == v;
 }
 
 function canStartGame(actions) {
     return actions.some(function (action) { 
-	return tupleMatches(action, "game", "phase", "playing"); })
+        return tupleMatches(action, "game", "phase", "playing"); })
 }
 
 function me(state) {
     for (var i = 0; i < state.length; ++i) {
-	var tuple = state[i];
-	if (att(tuple) == "self" && value(tuple) == true) {
-	    return entity(tuple);
-	}
+        var tuple = state[i];
+        if (att(tuple) == "self" && value(tuple) == true) {
+            return entity(tuple);
+        }
     }
     return null;
 }
 
 function watchActions(oldState, newState, oldActions, newActions) {
     if (canStartGame(newActions)) {
-	$("#start-game").attr("disabled", "enabled");
+        $("#start-game").attr("disabled", "enabled");
     } 
     else {
-	$("#start-game").attr("disabled", "disabled");
+        $("#start-game").attr("disabled", "disabled");
     }
 }
 
