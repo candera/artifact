@@ -64,7 +64,7 @@ game."
 	 ;; JQuery and related plugins
 	 ;; Empty string in script tag is to get the closing tag to
 	 ;; show up, since the validator complains otherwise.
-	 [:script {:src "http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"} ""]
+	 [:script {:src "/script/jquery.min-1.5.1.js"} ""]
 	 [:script {:src "/script/jquery.timers-1.2.js"} ""]
 
 	 [:script
