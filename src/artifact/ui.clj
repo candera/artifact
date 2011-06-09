@@ -73,7 +73,8 @@ game."
 	 [:script {:src "/script/game.js"} ""]]
 	[:body
 	 [:div {:id "setup-ui"}
-          [:button {:id "start-game" :click "javascript:startGame()"
+          [:button {:id "start-game"
+                    :onclick "javascript:startGame()"
                     :disabled "disabled"}
            "Start game!"]
 	  [:table {:id "joined-players"}

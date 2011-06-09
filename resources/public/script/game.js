@@ -228,6 +228,10 @@ function tupleMatches(tuple, e, a, v) {
         value(tuple) == v;
 }
 
+function startGame() {
+    postTuple("game", "phase", "playing");
+}
+
 function canStartGame(actions) {
     return actions.some(function (action) { 
         return tupleMatches(action, "game", "phase", "playing"); })
@@ -245,12 +249,7 @@ function me(state) {
 
 function watchActions(change) {
     var newActions = change.newValue; 
-    if (canStartGame(newActions)) {
-        $("#start-game").attr("disabled", "enabled");
-    } 
-    else {
-        $("#start-game").attr("disabled", "disabled");
-    }
+    $("#start-game").attr("disabled", !canStartGame(newActions));
 }
 
 function mergeGameState (newState, status, jqXHR) {

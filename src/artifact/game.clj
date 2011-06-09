@@ -148,6 +148,7 @@ players with that name."
      ;; TODO: Also ensure that this is an available action for this
      ;; player. 
      (and (is-player? e) (= a "ready")) [[nil e a v]]
+     (= [e a v] ["game" "phase" "playing"]) [[nil "game" "phase" "playing"]]
      ;; TODO: add default action here
      true (not-implemented))))
 
