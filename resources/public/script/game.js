@@ -139,21 +139,34 @@ function fireWatches(oldState, newState) {
         var newVal = getTupleValue(newState, watch.e, watch.a);
 
         if (oldVal != newVal) {
-            watch.f(oldState, newState, oldVal, newVal);
+	    watch.f({ 
+		oldState: oldState, 
+		newState: newState,
+		entity: watch.e,
+		att: watch.a,
+		oldValue: oldVal, 
+		newValue: newVal
+	    });
         }
     }
 }
 
-function setPlayerReady(player, ready) {
-    if (ready) { 
+function setPlayerReady(change) {
+    var ready = change.newValue; 
+    var player = change.entity; 
+    if (change.newValue) { 
 	console.log("Setting ready to ", ready, "for player ", player);
 	$("#joined-players tr[player-id='" + player + "'] td.player-readiness").text("Ready");
     }
 }
 
-function watchPlayers(oldState, newState, oldPlayers, newPlayers) {
+function watchPlayers(change) {
     // Iterate over the list of players in game,players and display a
     // row for each, highlighting if it's us
+    var oldState = change.oldState;
+    var newState = change.newState;
+    var oldPlayers = change.oldValue; 
+    var newPlayers = change.newValue; 
     var changes = diff(oldPlayers, newPlayers);
 
     var additions = changes.additions;
@@ -165,7 +178,7 @@ function watchPlayers(oldState, newState, oldPlayers, newPlayers) {
         var name = getTupleValue(newState, addition, "name");
         var self = getTupleValue(newState, addition, "self");
 
-        addWatch(addition, "ready", function(os, ns, ov, nv) { setPlayerReady(addition, nv); }); 
+        addWatch(addition, "ready", setPlayerReady); 
 
         $("#joined-players")
             .append(
@@ -189,8 +202,11 @@ function watchPlayers(oldState, newState, oldPlayers, newPlayers) {
     // }
 }
 
-function watchPhase(oldState, newState, oldPhase, newPhase) {
-   if (oldPhase == "setup" && newPhase == "playing") {
+function watchPhase(change) {
+    var newState = change.newState;
+    var oldPhase = change.oldValue; 
+    var newPhase = change.newValue; 
+    if (oldPhase == "setup" && newPhase == "playing") {
         $("#setup-ui").hide();
         $("#playing-ui").fadeIn(400);
     }
@@ -198,7 +214,7 @@ function watchPhase(oldState, newState, oldPhase, newPhase) {
     else if (oldPhase == null) {
         $("#" + newPhase + "-ui").show();
     }
-
+    
     if (newPhase == "setup") {
         updateUISetup(gameState, newState);
         addWatch(me(newState), "available-actions", watchActions);
@@ -227,7 +243,8 @@ function me(state) {
     return null;
 }
 
-function watchActions(oldState, newState, oldActions, newActions) {
+function watchActions(change) {
+    var newActions = change.newValue; 
     if (canStartGame(newActions)) {
         $("#start-game").attr("disabled", "enabled");
     } 
