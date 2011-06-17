@@ -80,6 +80,20 @@ action available. "
   ;; Fifth player cannot be added
   _ (throws :artifact.game/cannot-add-more-players (add-player game "Five")))
 
+;;; TODO: make this test less stupid - there's no reason to hard-code
+;;; the icons into the test.
+(defscenario players-assigned-colors
+  game (new-game)
+  [game id1] (add-player game "One")
+  [game id2] (add-player game "Two")
+  [game id3] (add-player game "Three")
+  [game id4] (add-player game "Four")
+  _ (are [icon id]
+         (= [icon] (query-values game [:any id "icon" :any]))
+         "/images/professor-blue.png" id1
+         "/images/professor-red.png" id2
+         "/images/professor-green.png" id3
+         "/images/professor-yellow.png" id4))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

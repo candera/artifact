@@ -50,6 +50,15 @@
   [game n]
   (next-entity-ids game "game" "pieces" "ra" n))
 
+(defn- next-icon
+  "Return the next untaken icon in the specified game."
+  [game]
+  (let [taken (set (query-values game [:any #"player:.*" "icon" :any]))]
+    (->> ["/images/professor-blue.png" "/images/professor-red.png"
+          "/images/professor-green.png" "/images/professor-yellow.png"]
+         (filter #(not (taken %)))
+         (first))))
+
 (defn lookup-token-by-id
   "Given a player id and a game, return the player's token."
   [game id]
@@ -94,6 +103,7 @@ players with that name."
          [nil id "money" 3]
          [nil id "pieces" (conj ra-ids professor-id)]
          [nil id "ready" false]
+         [nil id "icon" (next-icon game)]
          [nil (first ra-ids) "location" "research-bar-ready"]
          [nil "game" "players" new-players]]))))
 
