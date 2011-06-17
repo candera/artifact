@@ -169,7 +169,10 @@ players with that name."
   [[:any         :any    :public]
    [#"player:.*" :any    :private]
    [#"player:.*" "ready" :public]
-   [#"player:.*" "name"  :public]])
+   [#"player:.*" "name"  :public]
+   ;; This is actually wrong: the player shouldn't have an icon, the
+   ;; pieces should
+   [#"player:.*" "icon"  :public]])
 
 (defn new-game
   "Sets up a game with the data it needs in order to bootstrap."

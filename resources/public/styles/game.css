@@ -42,3 +42,12 @@
     height: 1010px;
     border: solid 2px black;
 }
+
+.player
+{
+    /* Might need this again if I figure out why background-image isn't
+       working for the game pieces. I went with img tags instead. */
+    /* background-repeat: no-repeat; */
+    width: 32px;
+    height: 32px;
+}

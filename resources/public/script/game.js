@@ -191,6 +191,16 @@ function watchPlayers(change) {
                     .addClass(self ? "self" : "other")
                     .append($("<td>").text(name + (self ? " (you)" : "")))
                     .append(readyButtonCell(newState, addition, self)));
+	
+	var icon = getTupleValue(newState, addition, "icon");
+
+	var playerDiv = $("<div class='player' id='" + addition + 
+			  "' player-id='" + addition + "'>" + 
+			  "<img src='" + icon + "' /></div>")
+//	    .attr("background-image", icon)
+	    .draggable();
+
+	$("#ma-board").append(playerDiv);
     }
 
     // We don't even have a mechanism in the game for players to
@@ -219,11 +229,18 @@ function watchPhase(change) {
         $("#" + newPhase + "-ui").show();
     }
     
+    // TODO: We need to handle refresh better: some of these watches
+    // need to be added whether we're transitioning from setup to
+    // playing or just going straight into playing. We should probably
+    // have watches that are phase-specific, and have a way to remove
+    // watches when transitioning out of a phase.
     if (newPhase == "setup") {
         updateUISetup(gameState, newState);
-        addWatch(me(newState), "available-actions", watchActions);
-        addWatch("game", "players", watchPlayers);
     }
+
+    addWatch(me(newState), "available-actions", watchActions);
+    addWatch("game", "players", watchPlayers);
+
 }
 
 function tupleMatches(tuple, e, a, v) {
