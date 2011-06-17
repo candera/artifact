@@ -1,3 +1,7 @@
+$(function() {
+    $("#playing-tabs").tabs();
+});
+
 var gameState = [];
 
 $(document).everyTime(500, updateGameState);

@@ -60,12 +60,14 @@ game."
 	[:head
 	 [:title "Artifact (Pre-Alpha)"]
 	 [:link {:rel "stylesheet" :type "text/css" :href "/styles/game.css"}]
-
+         [:link {:rel "stylesheet" :type "text/css" :href "/styles/sunny/jquery-ui-1.8.13.custom.css"}]
+         
 	 ;; JQuery and related plugins
 	 ;; Empty string in script tag is to get the closing tag to
 	 ;; show up, since the validator complains otherwise.
 	 [:script {:src "/script/jquery.min-1.5.1.js"} ""]
 	 [:script {:src "/script/jquery.timers-1.2.js"} ""]
+         [:script {:src "/script/jquery-ui-1.8.13.custom.min.js"} ""]
 
 	 [:script
 	  ;; URL for retrieving game state
@@ -80,9 +82,12 @@ game."
 	  [:table {:id "joined-players"}
 	   [:tr [:th "Player"] [:th "State"]] ""]]
 	 [:div {:id "playing-ui"}
-	  "The UI for actually playing the game will appear here."
-          [:div {:id "ma-board"} ""]
-          [:div {:id "academy-board"} ""]]
+          [:div {:id "playing-tabs"}
+           [:ul
+            [:li [:a {:href "#ma-board"} "Major Action Board"]]
+            [:li [:a {:href "#academy-board"} "Academy Board"]]]
+           [:div {:id "ma-board"} ""]
+           [:div {:id "academy-board"} ""]]]
 	 [:textarea {:id "gameState" :readonly "readonly" :rows 20}
 	  "diagnostic information is displayed here"]]])))))
 
