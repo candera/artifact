@@ -165,6 +165,9 @@ players with that name."
      ;; player. 
      (and (is-player? e) (= a "ready")) [[nil e a v]]
      (= [e a v] ["game" "phase" "playing"]) [[nil "game" "phase" "playing"]]
+     ;; This one is just temporary for the demo: accept any location update
+     ;; TODO: Remove
+     (= a "location") [[nil e a v]]
      ;; TODO: add default action here
      true (not-implemented))))
 

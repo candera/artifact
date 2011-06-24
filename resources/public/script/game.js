@@ -168,6 +168,20 @@ function isMe(state, entity) {
     return entity == me(state); 
 }
 
+function pieceMoved(event, ui) {
+    postTuple($(this).attr("game-piece"), "location", [ ui.offset.left, ui.offset.top]);
+}
+
+function watchPieceLocation(change) {
+    var newLocation = change.newValue; 
+    var newX = newLocation[0];
+    var newY = newLocation[1];
+    var piece = change.entity;
+
+    var pieceDiv = $(".piece[game-piece='"+piece+"']");
+    pieceDiv.offset({left: newX, top: newY});
+}
+
 function watchPlayerPieces(change) {
     var oldPieces = change.oldValue; 
     var newPieces = change.newValue; 
@@ -177,22 +191,26 @@ function watchPlayerPieces(change) {
     var deletions = changes.deletions;
  
     for (var i = 0; i < additions.length; ++i) {
-        var addition = additions[i];
-        var icon = getTupleValue(change.newState, addition, "icon");
+        var piece = additions[i];
+        var icon = getTupleValue(change.newState, piece, "icon");
 
-        var location = getTupleValue(change.newState, addition, "location");
+        var location = getTupleValue(change.newState, piece, "location");
 
         if (location != null) {
-            var pieceDiv = $("<div class='piece' id='" + addition + 
-                             "' game-piece='" + addition + "'>" + 
+            var pieceDiv = $("<div class='piece' id='" + piece + 
+                             "' game-piece='" + piece + "'>" + 
                              "<img src='" + icon + "' /></div>");
 
             if (isMe(change.newState, change.entity)) {
-                pieceDiv.draggable();
+                pieceDiv.draggable({
+                    stop: pieceMoved
+                });
             }
             
             $("#ma-board").append(pieceDiv);
         }
+
+	addWatch(piece, "location", watchPieceLocation);
     }
 
     // TODO: handle deletions, presumably by deleting the element with
