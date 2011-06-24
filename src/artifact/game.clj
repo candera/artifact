@@ -15,40 +15,42 @@
   [game]
   (or (get-latest-value game "game" "pieces") []))
 
-(defn- entities
-  "Return a seq of entity ids"
+(defn- entity-ids
+  "Return a lazy seq of possible entity ids with the given prefix.
+  E.g. for \"foo\", return foo:1, foo:2, ..."
   [prefix]
   (map (fn [n] (str prefix ":" n)) (iterate inc 1)))
 
-(defn- next-entity-ids
-  "Returns the next n available ids for the specified entity in the specified game"
-  [game owning-entity owning-attribute prefix n]
-  (let [entity-ids (set (get-latest-value game owning-entity owning-attribute))]
-    (take n
-          (filter
-           #(not (entity-ids %))
-           (entities prefix)))))
+(defn- available-entity-ids
+  "Returns a lazy seq of available ids that have the specified prefix."
+  [game prefix]
+  (let [entity-pattern (re-pattern (str prefix ":.*"))
+        existing-entity-ids (->> (query game [:any entity-pattern :any :any])
+                                 (map entity)
+                                 (set))]
+    (filter
+     (complement existing-entity-ids)
+     (entity-ids prefix))))
 
 (defn- next-entity-id
   "Return the next available id for the specified entity in the specified game"
-  [game owning-entity owning-attribute prefix]
-  (first (next-entity-ids game owning-entity owning-attribute prefix 1)))
+  [game prefix]
+  (first (available-entity-ids game prefix)))
 
 (defn- next-player-id
   "Return the next available player id in the specified game."
   [game]
-  (next-entity-id game "game" "players" "player"))
-
+  (next-entity-id game "player"))
 
 (defn- next-professor-id
   "Return the next available professor id in the specified game."
   [game]
-  (next-entity-id game "game" "pieces" "professor"))
+  (next-entity-id game "professor"))
 
 (defn- next-ra-ids
   "Return the next n ra ids in the specified game."
   [game n]
-  (next-entity-ids game "game" "pieces" "ra" n))
+  (take n (available-entity-ids game "ra")))
 
 (defn- next-icon
   "Return the next untaken icon in the specified game."
@@ -103,9 +105,13 @@ players with that name."
          [nil id "money" 3]
          [nil id "pieces" (conj ra-ids professor-id)]
          [nil id "ready" false]
-         [nil id "icon" (next-icon game)]
-         [nil (first ra-ids) "location" "research-bar-ready"]
-         [nil "game" "players" new-players]]))))
+         [nil professor-id "icon" (next-icon game)]
+         [nil professor-id "location" "todo"]
+         ;; We'll put this back in when we have something to draw.
+         ;; Also, we need to find a way to indicate which board a
+         ;; piece is on.
+         ;; [nil (first ra-ids) "location" "research-bar-ready"]
+          [nil "game" "players" new-players]]))))
 
 ;;; Action functions
 ;;

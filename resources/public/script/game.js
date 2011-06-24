@@ -164,6 +164,43 @@ function setPlayerReady(change) {
     }
 }
 
+function isMe(state, entity) {
+    return entity == me(state); 
+}
+
+function watchPlayerPieces(change) {
+    var oldPieces = change.oldValue; 
+    var newPieces = change.newValue; 
+
+    var changes = diff(oldPieces, newPieces);
+    var additions = changes.additions;
+    var deletions = changes.deletions;
+
+    for (var i = 0; i < changes.additions; ++i) {
+	var icon = getTupleValue(change.newState, addition, "icon");
+
+	var location = getTupleValue(change.newState, addition, "location");
+
+	if (location != null) {
+	    var pieceDiv = $("<div class='piece' id='" + addition + 
+			     "' game-piece='" + addition + "'>" + 
+			     "<img src='" + icon + "' /></div>");
+
+	    if (isMe(change.newState, change.entity)) {
+		pieceDiv.draggable();
+	    }
+	    
+	    $("#ma-board").append(pieceDiv);
+	}
+    }
+
+    // TODO: handle deletions, presumably by deleting the element with
+    // a game-piece attribute equal to the thing that was removed from
+    // the list. Or possibly, we'll never have to deal with this.
+    // Maybe things are only ever added, and their locations just
+    // change to nil to indicate they're off the board.
+}
+
 function watchPlayers(change) {
     // Iterate over the list of players in game,players and display a
     // row for each, highlighting if it's us
@@ -183,6 +220,7 @@ function watchPlayers(change) {
         var self = getTupleValue(newState, addition, "self");
 
         addWatch(addition, "ready", setPlayerReady); 
+	addWatch(addition, "pieces", watchPlayerPieces);
 
         $("#joined-players")
             .append(
@@ -191,16 +229,7 @@ function watchPlayers(change) {
                     .addClass(self ? "self" : "other")
                     .append($("<td>").text(name + (self ? " (you)" : "")))
                     .append(readyButtonCell(newState, addition, self)));
-	
-	var icon = getTupleValue(newState, addition, "icon");
 
-	var playerDiv = $("<div class='player' id='" + addition + 
-			  "' player-id='" + addition + "'>" + 
-			  "<img src='" + icon + "' /></div>")
-//	    .attr("background-image", icon)
-	    .draggable();
-
-	$("#ma-board").append(playerDiv);
     }
 
     // We don't even have a mechanism in the game for players to
