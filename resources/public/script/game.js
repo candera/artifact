@@ -175,8 +175,9 @@ function watchPlayerPieces(change) {
     var changes = diff(oldPieces, newPieces);
     var additions = changes.additions;
     var deletions = changes.deletions;
-
-    for (var i = 0; i < changes.additions; ++i) {
+ 
+    for (var i = 0; i < additions.length; ++i) {
+        var addition = additions[i];
         var icon = getTupleValue(change.newState, addition, "icon");
 
         var location = getTupleValue(change.newState, addition, "location");

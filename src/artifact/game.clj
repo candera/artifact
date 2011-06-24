@@ -52,10 +52,10 @@
   [game n]
   (take n (available-entity-ids game "ra")))
 
-(defn- next-icon
-  "Return the next untaken icon in the specified game."
+(defn- next-professor-icon
+  "Return the next untaken professor icon in the specified game."
   [game]
-  (let [taken (set (query-values game [:any #"player:.*" "icon" :any]))]
+  (let [taken (set (query-values game [:any #"professor:.*" "icon" :any]))]
     (->> ["/images/professor-blue.png" "/images/professor-red.png"
           "/images/professor-green.png" "/images/professor-yellow.png"]
          (filter #(not (taken %)))
@@ -105,7 +105,7 @@ players with that name."
          [nil id "money" 3]
          [nil id "pieces" (conj ra-ids professor-id)]
          [nil id "ready" false]
-         [nil professor-id "icon" (next-icon game)]
+         [nil professor-id "icon" (next-professor-icon game)]
          [nil professor-id "location" "todo"]
          ;; We'll put this back in when we have something to draw.
          ;; Also, we need to find a way to indicate which board a
@@ -172,13 +172,11 @@ players with that name."
 
 (def ^{:private true :doc "Defines the visibility rules for the game"}
   acl-rules
-  [[:any         :any    :public]
-   [#"player:.*" :any    :private]
-   [#"player:.*" "ready" :public]
-   [#"player:.*" "name"  :public]
-   ;; This is actually wrong: the player shouldn't have an icon, the
-   ;; pieces should
-   [#"player:.*" "icon"  :public]])
+  [[:any         :any     :public]      ; Default is public
+   [#"player:.*" :any     :private]
+   [#"player:.*" "ready"  :public]
+   [#"player:.*" "name"   :public]
+   [#"player:.*" "pieces" :public]])
 
 (defn new-game
   "Sets up a game with the data it needs in order to bootstrap."
