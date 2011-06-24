@@ -48,7 +48,8 @@
 (def app (wrap-params all-routes))
 
 (defn -main [& args]
-  (run-jetty app {:port 8080}))
+  (let [port (Integer/parseInt (get (System/getenv) "PORT" "8080"))]
+    (run-jetty app {:port port})))
 
 (let [server (atom nil)
       set-server #(reset! server %)]
