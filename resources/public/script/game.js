@@ -40,11 +40,11 @@ function getTupleValue(store, e, a){
 }
 
 function getTupleEntity(store, a, v) {
-   for (var i = 0; i < store.length; ++i) {
-       var tuple = store[i];
-       if (att(tuple) == a && value(tuple) == v) {
-           return value(tuple);
-       }
+    for (var i = 0; i < store.length; ++i) {
+        var tuple = store[i];
+        if (att(tuple) == a && value(tuple) == v) {
+            return value(tuple);
+        }
     }
     return null; 
 }
@@ -143,14 +143,14 @@ function fireWatches(oldState, newState) {
         var newVal = getTupleValue(newState, watch.e, watch.a);
 
         if (oldVal != newVal) {
-	    watch.f({ 
-		oldState: oldState, 
-		newState: newState,
-		entity: watch.e,
-		att: watch.a,
-		oldValue: oldVal, 
-		newValue: newVal
-	    });
+            watch.f({ 
+                oldState: oldState, 
+                newState: newState,
+                entity: watch.e,
+                att: watch.a,
+                oldValue: oldVal, 
+                newValue: newVal
+            });
         }
     }
 }
@@ -159,8 +159,8 @@ function setPlayerReady(change) {
     var ready = change.newValue; 
     var player = change.entity; 
     if (change.newValue) { 
-	console.log("Setting ready to ", ready, "for player ", player);
-	$("#joined-players tr[player-id='" + player + "'] td.player-readiness").text("Ready");
+        console.log("Setting ready to ", ready, "for player ", player);
+        $("#joined-players tr[player-id='" + player + "'] td.player-readiness").text("Ready");
     }
 }
 
@@ -177,21 +177,21 @@ function watchPlayerPieces(change) {
     var deletions = changes.deletions;
 
     for (var i = 0; i < changes.additions; ++i) {
-	var icon = getTupleValue(change.newState, addition, "icon");
+        var icon = getTupleValue(change.newState, addition, "icon");
 
-	var location = getTupleValue(change.newState, addition, "location");
+        var location = getTupleValue(change.newState, addition, "location");
 
-	if (location != null) {
-	    var pieceDiv = $("<div class='piece' id='" + addition + 
-			     "' game-piece='" + addition + "'>" + 
-			     "<img src='" + icon + "' /></div>");
+        if (location != null) {
+            var pieceDiv = $("<div class='piece' id='" + addition + 
+                             "' game-piece='" + addition + "'>" + 
+                             "<img src='" + icon + "' /></div>");
 
-	    if (isMe(change.newState, change.entity)) {
-		pieceDiv.draggable();
-	    }
-	    
-	    $("#ma-board").append(pieceDiv);
-	}
+            if (isMe(change.newState, change.entity)) {
+                pieceDiv.draggable();
+            }
+            
+            $("#ma-board").append(pieceDiv);
+        }
     }
 
     // TODO: handle deletions, presumably by deleting the element with
@@ -220,7 +220,7 @@ function watchPlayers(change) {
         var self = getTupleValue(newState, addition, "self");
 
         addWatch(addition, "ready", setPlayerReady); 
-	addWatch(addition, "pieces", watchPlayerPieces);
+        addWatch(addition, "pieces", watchPlayerPieces);
 
         $("#joined-players")
             .append(
