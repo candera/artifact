@@ -190,7 +190,7 @@ players with that name."
   matches, and nil otherwise."
   [tuple rule]
   (let [[espec aspec vis] rule
-	pred (build-spec-filter [:any espec aspec :any])]
+        pred (build-spec-filter [:any espec aspec :any])]
     (when (pred tuple) vis)))
 
 (defn- is-public?
@@ -198,7 +198,7 @@ players with that name."
   [tuple]
   (->> acl-rules
        (map #(rule-visibility tuple %))
-       (filter identity)		; Remove nils
+       (filter identity)                ; Remove nils
        (last)
        (= :public)))
 

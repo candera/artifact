@@ -1,10 +1,10 @@
 (ns artifact.api
   "Defines the JSON API used by clients to retrieve game state."
   (:use [clojure.contrib.json :only [json-str read-json]]
-	artifact.tuplestore
-	artifact.state
-	artifact.game
-	artifact.logging
+        artifact.tuplestore
+        artifact.state
+        artifact.game
+        artifact.logging
         artifact.error)
   (:refer-clojure :exclude [time]))
 
@@ -16,7 +16,7 @@
   (dosync
    {:mime-type "application/json"
     :body (json-str
-	   (get-visible-tuples (coalesce @*game*) token))}))
+           (get-visible-tuples (coalesce @*game*) token))}))
 
 ;; Contains the list of error messages to send back to the client,
 ;; based on what's thrown by the app.
