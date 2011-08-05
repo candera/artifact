@@ -1,17 +1,17 @@
 (ns artifact.core
   (:use [ring.adapter.jetty :only (run-jetty)]
-	[ring.middleware.params]
-	[ring.middleware.multipart-params]
-	[artifact.game :only (new-game)]
-	[artifact.state :only (*game*)]
-	[clojure.contrib.json :only (read-json)]
-	compojure.core
-	artifact.ui
-	artifact.api
-	artifact.logging
-	artifact.tuplestore)
+        [ring.middleware.params]
+        [ring.middleware.multipart-params]
+        [artifact.game :only (new-game)]
+        [artifact.state :only (*game*)]
+        [clojure.contrib.json :only (read-json)]
+        compojure.core
+        artifact.ui
+        artifact.api
+        artifact.logging
+        artifact.tuplestore)
   (:require [compojure.handler :as handler]
-	    [compojure.route :as route])
+            [compojure.route :as route])
   (:gen-class)
   (:refer-clojure :exclude [time]))
 
@@ -21,11 +21,11 @@
   ;; TODO: extract token validation into middleware?
   (GET "/api" [token] (api-get token))
   (POST "/api" [token]
- 	(fn [req]
-	  (let [body (slurp (:body req))]
-	    (debug "Body is:" body)
-	    (debug "token is:" token)
-	    (api-post token (read-json body false))))))
+        (fn [req]
+          (let [body (slurp (:body req))]
+            (debug "Body is:" body)
+            (debug "token is:" token)
+            (api-post token (read-json body false))))))
 
 (defroutes test-routes
   (GET "/test" [] (test-page)))

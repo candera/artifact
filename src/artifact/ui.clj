@@ -1,12 +1,12 @@
 (ns artifact.ui
   "Contains the HTML-y bits of the game."
   (:use [clojure.contrib.prxml :only (prxml *prxml-indent* *html-compatible*)]
-	[clojure.contrib.json :only (json-str)]
-	[ring.util.response :only (response)]
-	compojure.core
+        [clojure.contrib.json :only (json-str)]
+        [ring.util.response :only (response)]
+        compojure.core
         artifact.tuplestore
-	artifact.game
-	artifact.state
+        artifact.game
+        artifact.state
         artifact.error
         artifact.logging)
   (:refer-clojure :exclude [time]))
@@ -29,8 +29,8 @@ game."
 
 (defn to-html-str [& content]
   (binding [*prxml-indent* 2
-	    *html-compatible* true
-	    *out* (java.io.StringWriter.)]
+            *html-compatible* true
+            *out* (java.io.StringWriter.)]
     (doseq [e content] (prxml e))
     (.toString *out*)))
 
@@ -52,44 +52,44 @@ game."
 (defn game-page [token]
   (dosync
    (let [player-id (lookup-player @*game* token)
-	 player-name (lookup-player-name @*game* player-id)]
+         player-name (lookup-player-name @*game* player-id)]
      (response
       (to-html-str
        [:doctype! "html"]
        [:html
-	[:head
-	 [:title "Artifact (Pre-Alpha)"]
-	 [:link {:rel "stylesheet" :type "text/css" :href "/styles/game.css"}]
+        [:head
+         [:title "Artifact (Pre-Alpha)"]
+         [:link {:rel "stylesheet" :type "text/css" :href "/styles/game.css"}]
          [:link {:rel "stylesheet" :type "text/css" :href "/styles/sunny/jquery-ui-1.8.13.custom.css"}]
-         
-	 ;; JQuery and related plugins
-	 ;; Empty string in script tag is to get the closing tag to
-	 ;; show up, since the validator complains otherwise.
-	 [:script {:src "/script/jquery.min-1.5.1.js"} ""]
-	 [:script {:src "/script/jquery.timers-1.2.js"} ""]
+
+         ;; JQuery and related plugins
+         ;; Empty string in script tag is to get the closing tag to
+         ;; show up, since the validator complains otherwise.
+         [:script {:src "/script/jquery.min-1.5.1.js"} ""]
+         [:script {:src "/script/jquery.timers-1.2.js"} ""]
          [:script {:src "/script/jquery-ui-1.8.13.custom.min.js"} ""]
 
-	 [:script
-	  ;; URL for retrieving game state
-	  [:raw! (str "var gameStateUrl='" (state-url token) "';")]]
-	 [:script {:src "/script/game.js"} ""]]
-	[:body
-	 [:div {:id "setup-ui"}
+         [:script
+          ;; URL for retrieving game state
+          [:raw! (str "var gameStateUrl='" (state-url token) "';")]]
+         [:script {:src "/script/game.js"} ""]]
+        [:body
+         [:div {:id "setup-ui"}
           [:button {:id "start-game"
                     :onclick "javascript:startGame()"
                     :disabled "disabled"}
            "Start game!"]
-	  [:table {:id "joined-players"}
-	   [:tr [:th "Player"] [:th "State"]] ""]]
-	 [:div {:id "playing-ui"}
+          [:table {:id "joined-players"}
+           [:tr [:th "Player"] [:th "State"]] ""]]
+         [:div {:id "playing-ui"}
           [:div {:id "playing-tabs"}
            [:ul
             [:li [:a {:href "#ma-board"} "Major Action Board"]]
             [:li [:a {:href "#academy-board"} "Academy Board"]]]
            [:div {:id "ma-board"} ""]
            [:div {:id "academy-board"} ""]]]
-	 [:textarea {:id "gameState" :readonly "readonly" :rows 20}
-	  "diagnostic information is displayed here"]]])))))
+         [:textarea {:id "gameState" :readonly "readonly" :rows 20}
+          "diagnostic information is displayed here"]]])))))
 
 (def ^{:private true} error-messages
   {:artifact.game/cannot-add-more-players "The game is already full."})
@@ -105,7 +105,7 @@ game."
               (debug "Error when" player-name "tried to join game:" e)
               (index (get error-messages e "Unrecognized error")))))
 
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn test-page []
   (to-html-str
@@ -120,3 +120,4 @@ game."
      [:div {:class "section"}
       (repeat 5 [:div {:class "option"}
                  (repeat 3 [:span {:class "selection"} "x"])])]]]))
+
