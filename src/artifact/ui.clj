@@ -107,3 +107,16 @@ game."
 
 
 
+(defn test-page []
+  (to-html-str
+   [:html
+    [:head
+     [:title "Test page"]
+     [:style "div { margin: 3px }
+.section { border: solid 2px red; width: 800px; }
+.option { border: solid 2px green; display: inline; float: left; }
+.selection { border: solid 2px black; width: auto; display: block }"]]
+    [:body
+     [:div {:class "section"}
+      (repeat 5 [:div {:class "option"}
+                 (repeat 3 [:span {:class "selection"} "x"])])]]]))

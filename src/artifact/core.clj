@@ -28,7 +28,7 @@
 	    (api-post token (read-json body false))))))
 
 (defroutes test-routes
-  (POST "/test" [token] "test"))
+  (GET "/test" [] (test-page)))
 
 (defroutes page-routes
   (GET "/" [] (to-html-str (index)))
