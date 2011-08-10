@@ -113,11 +113,11 @@ game."
     overflow: auto;
 }
 .section {
+    background: none repeat scroll 0 0 rgba(255, 255, 0, 0.1);
     width: 800px;
-    background: rgba(255,255, 0, 0.1);
 }
 .option {
-    border: 2px solid green;
+    border: 2px solid black;
     display: inline;
     float: left;
     padding-bottom: 2px;
@@ -128,12 +128,10 @@ game."
 .selection-box {
     border: 2px solid black;
     border-radius: 6px 6px 6px 6px;
-    display: block;
-    margin: 3px auto auto;
+    display: inline-block;
     padding: 1px;
-    float: left;
-    width: 13;
-    margin-right: 6;
+    width: 13px;
+    vertical-align: middle;
 }
 .selection-area {
     background: none repeat scroll 0 0 blue;
@@ -142,18 +140,42 @@ game."
     margin: auto;
 }
 .selection-text {
-    vertical-align: middle
+    vertical-align: middle;
 }
 h2 {
     background: none repeat scroll 0 0 yellow;
     color: #666666;
     margin: 0;
-    width: 100;
     text-align: center;
+    width: 100px;
 }
 ")
 
-;; TODO: Get text veritically aligned with selection box
+(def test-options
+  ["Politic"
+   "Leverage Departmental politics to become the Dean's favorite"
+   ["1" "2" "3"]
+
+   "Submit Grant"
+   "Submit a research grant to receive more funding"
+   ["$5" "$3" "Roll ($1-6)"]
+
+   "Dig"
+   "Trade in Resource Points to pull cards from the Dig Site"
+   ["Artifact Card" "Artifact Card"]
+
+   "Teach"
+   ""
+   ["Collect 1 RA"]
+
+   "Scheme"
+   ""
+   ["Scheme" "Scheme"]
+
+   "Explore"
+   ""
+   ["Explore" "Explore"]])
+
 (defn test-page []
   (to-html-str
    [:html
@@ -162,6 +184,7 @@ h2 {
      [:style test-style]]
     [:body
      [:div {:class "section"}
+      [:h1 "Major Actions"]
       (repeat 5 [:div {:class "option"}
                  [:h2 "Title"]
                  (repeat 3 [:div {:class "selection"}
