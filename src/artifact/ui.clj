@@ -107,17 +107,65 @@ game."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def test-style
+  "div {
+    margin: 3px;
+    overflow: auto;
+}
+.section {
+    width: 800px;
+    background: rgba(255,255, 0, 0.1);
+}
+.option {
+    border: 2px solid green;
+    display: inline;
+    float: left;
+    padding-bottom: 2px;
+}
+.selection {
+    display: block;
+}
+.selection-box {
+    border: 2px solid black;
+    border-radius: 6px 6px 6px 6px;
+    display: block;
+    margin: 3px auto auto;
+    padding: 1px;
+    float: left;
+    width: 13;
+    margin-right: 6;
+}
+.selection-area {
+    background: none repeat scroll 0 0 blue;
+    border-radius: 4px 4px 4px 4px;
+    height: 15px;
+    margin: auto;
+}
+.selection-text {
+    vertical-align: middle
+}
+h2 {
+    background: none repeat scroll 0 0 yellow;
+    color: #666666;
+    margin: 0;
+    width: 100;
+    text-align: center;
+}
+")
+
+;; TODO: Get text veritically aligned with selection box
 (defn test-page []
   (to-html-str
    [:html
     [:head
      [:title "Test page"]
-     [:style "div { margin: 3px }
-.section { border: solid 2px red; width: 800px; }
-.option { border: solid 2px green; display: inline; float: left; }
-.selection { border: solid 2px black; width: auto; display: block }"]]
+     [:style test-style]]
     [:body
      [:div {:class "section"}
       (repeat 5 [:div {:class "option"}
-                 (repeat 3 [:span {:class "selection"} "x"])])]]]))
+                 [:h2 "Title"]
+                 (repeat 3 [:div {:class "selection"}
+                            [:div {:class "selection-box"}
+                             [:div {:class "selection-area"} ""]]
+                            [:span {:class "selection-text"} "x"]])])]]]))
 
