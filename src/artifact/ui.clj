@@ -121,6 +121,7 @@ game."
     display: inline;
     float: left;
     padding-bottom: 2px;
+    width: 123px;
 }
 .selection {
     display: block;
@@ -130,8 +131,8 @@ game."
     border-radius: 6px 6px 6px 6px;
     display: inline-block;
     padding: 1px;
-    width: 13px;
     vertical-align: middle;
+    width: 13px;
 }
 .selection-area {
     background: none repeat scroll 0 0 blue;
@@ -147,7 +148,10 @@ h2 {
     color: #666666;
     margin: 0;
     text-align: center;
-    width: 100px;
+    width: 100%;
+    font-size: small;
+}
+h1 {
 }
 ")
 
@@ -176,6 +180,18 @@ h2 {
    ""
    ["Explore" "Explore"]])
 
+(defn- selection [selection-text]
+   [:div {:class "selection"}
+    [:div {:class "selection-box"}
+     [:div {:class "selection-area"} ""]]
+    [:span {:class "selection-text"} selection-text]])
+
+(defn- option [option]
+  (let [[title description selections] option]
+   [:div {:class "option"}
+    [:h2 title]
+    (map selection selections)]))
+
 (defn test-page []
   (to-html-str
    [:html
@@ -185,10 +201,5 @@ h2 {
     [:body
      [:div {:class "section"}
       [:h1 "Major Actions"]
-      (repeat 5 [:div {:class "option"}
-                 [:h2 "Title"]
-                 (repeat 3 [:div {:class "selection"}
-                            [:div {:class "selection-box"}
-                             [:div {:class "selection-area"} ""]]
-                            [:span {:class "selection-text"} "x"]])])]]]))
+      (map option (partition 3 test-options))]]]))
 
