@@ -122,6 +122,7 @@ game."
     float: left;
     padding-bottom: 2px;
     width: 123px;
+    height: 119px;
 }
 .selection {
     display: block;
@@ -142,16 +143,23 @@ game."
 }
 .selection-text {
     vertical-align: middle;
+    font: Arial;
+    font-size: small;
 }
 h2 {
     background: none repeat scroll 0 0 yellow;
     color: #666666;
+    font-size: small;
     margin: 0;
     text-align: center;
     width: 100%;
-    font-size: small;
 }
 h1 {
+    font-family: "Times New Roman";
+    font-size: large;
+    margin: 4;
+    background: gold;
+    color: rgba(0, 0, 0, 0.5);
 }
 ")
 
@@ -170,7 +178,7 @@ h1 {
 
    "Teach"
    ""
-   ["Collect 1 RA"]
+   ["Collect 1 RA" "Collect 1 RA"]
 
    "Scheme"
    ""
