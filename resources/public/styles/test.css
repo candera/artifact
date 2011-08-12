@@ -1,0 +1,117 @@
+div {
+     margin: 3px;
+     overflow: auto;
+}
+
+.resource {
+     background-position: center center;
+     background-repeat: no-repeat;
+     background-size: 100% auto;
+     border: 2px solid black;
+     display: block;
+     height: 37px;
+     margin: auto;
+     width: 37px;
+}
+
+.scholastic {
+     background-image: url("/images/scholastic-research.png");
+}
+
+.field-research {
+     background-image: url("/images/field-research.png");
+}
+
+.dig-permit {
+     background-image: url("/images/dig-permit.png");
+}
+
+.site-support {
+     background-image: url("/images/site-support.png");
+}
+
+.eldritch-research {
+     background-image: url("/images/eldritch-research.png");
+}
+
+.cell {
+     border: 2px solid blue;
+     float: left;
+     height: 106px;
+     padding-bottom: 2px;
+     width: 41px;
+}
+
+.open {
+     background-color: violet;
+}
+
+.research-assistant {
+     border: 1px solid green;
+     height: 16px;
+     margin: auto;
+     width: 10px;
+}
+
+.player-one {
+     background: none repeat scroll 0% 0% yellow;
+}
+
+.player-four {
+     background: none repeat scroll 0% 0% pink;
+}
+
+.section {
+     background: none repeat scroll 0pt 0pt rgba(255, 255, 0, 0.1);
+     width: 1024px;
+}
+
+.option {
+     border: 2px solid black;
+     display: inline;
+     float: left;
+     height: 119px;
+     padding-bottom: 2px;
+     width: 135px;
+}
+
+.selection {
+     display: block;
+}
+
+.selection-box {
+     border-radius: 6px 6px 6px 6px;
+     border: 2px solid black;
+     display: inline-block;
+     padding: 1px;
+     vertical-align: middle;
+     width: 13px;
+}
+
+.selection-area {
+     background: none repeat scroll 0pt 0pt blue;
+     border-radius: 4px 4px 4px 4px;
+     height: 15px;
+     margin: auto;
+}
+
+.selection-text {
+     font-size: medium;
+     vertical-align: middle;
+}
+
+h2 {
+     background: none repeat scroll 0pt 0pt yellow;
+     color: #666666;
+     font-size: medium;
+     margin: 0pt;
+     text-align: center;
+     width: 100%;
+}
+
+h1 {
+     background: none repeat scroll 0pt 0pt gold;
+     color: rgba(0, 0, 0, 0.5);
+     font-size: large;
+     margin: 4px;
+}

@@ -107,62 +107,6 @@ game."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def test-style
-  "div {
-    margin: 3px;
-    overflow: auto;
-}
-.section {
-    background: none repeat scroll 0 0 rgba(255, 255, 0, 0.1);
-    width: 800px;
-}
-.option {
-    border: 2px solid black;
-    display: inline;
-    float: left;
-    padding-bottom: 2px;
-    width: 123px;
-    height: 119px;
-}
-.selection {
-    display: block;
-}
-.selection-box {
-    border: 2px solid black;
-    border-radius: 6px 6px 6px 6px;
-    display: inline-block;
-    padding: 1px;
-    vertical-align: middle;
-    width: 13px;
-}
-.selection-area {
-    background: none repeat scroll 0 0 blue;
-    border-radius: 4px 4px 4px 4px;
-    height: 15px;
-    margin: auto;
-}
-.selection-text {
-    vertical-align: middle;
-    font: Arial;
-    font-size: small;
-}
-h2 {
-    background: none repeat scroll 0 0 yellow;
-    color: #666666;
-    font-size: small;
-    margin: 0;
-    text-align: center;
-    width: 100%;
-}
-h1 {
-    font-family: "Times New Roman";
-    font-size: large;
-    margin: 4;
-    background: gold;
-    color: rgba(0, 0, 0, 0.5);
-}
-")
-
 (def test-options
   ["Politic"
    "Leverage Departmental politics to become the Dean's favorite"
@@ -186,7 +130,11 @@ h1 {
 
    "Explore"
    ""
-   ["Explore" "Explore"]])
+   ["Explore" "Explore"]
+
+   "Publish"
+   ""
+   ["Publish" "Publish"]])
 
 (defn- selection [selection-text]
    [:div {:class "selection"}
@@ -200,14 +148,50 @@ h1 {
     [:h2 title]
     (map selection selections)]))
 
+(defn- cell-class [type open]
+  (str "cell " type " " (if open "open" "")))
+
+(defn- resource-class [resource]
+  (str "resource " (if resource resource "resource-not-set")))
+
+(defn- cell [id type open resource]
+  [:div {:class (cell-class type open) :id (str "cell-" id)}
+   [:div {:class (resource-class resource)} ""]
+   [:div {:class "research-assistant no-player"} ""]])
+
+(def cell-descriptions
+  [[1  "doctoral" true "scholastic"]
+   [2  "doctoral" true "field-research"]
+   [3  "doctoral" false nil]
+   [4  "doctoral" false nil]
+   [5  "doctoral" false nil]
+   [6  "doctoral" false nil]
+   [7  "doctoral" false "site-support"]
+   [8  "tenured" false nil]
+   [9  "tenured" false nil]
+   [10 "tenured" false nil]
+   [11 "tenured" false nil]
+   [12 "tenured" false nil]
+   [13 "tenured" false nil]
+   [14 "tenured" false "dig-permit"]
+   [15 "arcane" false nil]
+   [16 "arcane" false nil]
+   [17 "arcane" false nil]
+   [18 "arcane" false "eldritch-research"]
+   [19 "arcane" false nil]
+   [20 "arcane" false nil]])
+
 (defn test-page []
   (to-html-str
    [:html
     [:head
-     [:title "Test page"]
-     [:style test-style]]
+     [:link {:rel "stylesheet" :type "text/css" :href "/styles/test.css"}]
+     [:title "Test page"]]
     [:body
      [:div {:class "section"}
       [:h1 "Major Actions"]
-      (map option (partition 3 test-options))]]]))
+      (map option (partition 3 test-options))]
+     [:div {:class "section"}
+      [:h1 "Academy Board"]
+      (map #(apply cell %) cell-descriptions)]]]))
 
