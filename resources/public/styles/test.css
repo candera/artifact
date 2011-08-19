@@ -1,69 +1,84 @@
+body {
+     background: url("/images/background.jpg") no-repeat scroll 0pt 0pt transparent;
+}
+
 div {
      margin: 3px;
      overflow: auto;
+}
+
+.zone-title {
+    -moz-transform: rotate(270deg)  translate(-70px,0px);
+    float: left;
+    width: 20px;
 }
 
 .resource {
      background-position: center center;
      background-repeat: no-repeat;
      background-size: 100% auto;
-     border: 2px solid black;
      display: block;
      height: 37px;
      margin: auto;
-     width: 37px;
+     width: 36px;
 }
 
 .scholastic {
-     background-image: url("/images/scholastic-research.png");
+     background-image: url("/images/scholastic-research-64.png");
 }
 
 .field-research {
-     background-image: url("/images/field-research.png");
+     background-image: url("/images/field-research-64.png");
 }
 
 .dig-permit {
-     background-image: url("/images/dig-permit.png");
+     background-image: url("/images/dig-permit-64.png");
 }
 
 .site-support {
-     background-image: url("/images/site-support.png");
+     background-image: url("/images/site-support-64.png");
 }
 
 .eldritch-research {
-     background-image: url("/images/eldritch-research.png");
+     background-image: url("/images/eldritch-research-64.png");
 }
 
 .cell {
-     border: 2px solid blue;
+     background-color: rgba(255, 255, 255, 0.75);
+     border: 2px solid black;
      float: left;
      height: 106px;
      padding-bottom: 2px;
-     width: 41px;
+     width: 40px;
 }
 
-.open {
-     background-color: violet;
+.closed {
+     background-color: rgba(190, 190, 200, 0.7);
 }
 
 .research-assistant {
-     border: 1px solid green;
+     border-radius: 3px 3px 3px 3px;
+     border: 1px solid black;
      height: 16px;
-     margin: auto;
+     margin: 2px auto auto;
      width: 10px;
 }
 
+.closed > .research-assistant {
+  border: 0px
+}
+
 .player-one {
-     background: none repeat scroll 0% 0% yellow;
+     background: none repeat scroll 0pt 0pt yellow;
 }
 
 .player-four {
-     background: none repeat scroll 0% 0% pink;
+     background: none repeat scroll 0pt 0pt pink;
 }
 
 .section {
-     background: none repeat scroll 0pt 0pt rgba(255, 255, 0, 0.1);
-     width: 1024px;
+     background: none repeat scroll 0pt 0pt rgba(255, 255, 200, 0.85);
+     width: 1002px;
 }
 
 .option {
@@ -72,7 +87,7 @@ div {
      float: left;
      height: 119px;
      padding-bottom: 2px;
-     width: 135px;
+     width: 132px;
 }
 
 .selection {
@@ -96,7 +111,7 @@ div {
 }
 
 .selection-text {
-     font-size: medium;
+     font-size: 14px;
      vertical-align: middle;
 }
 
@@ -114,4 +129,5 @@ h1 {
      color: rgba(0, 0, 0, 0.5);
      font-size: large;
      margin: 4px;
+     padding: 0px 2px;
 }

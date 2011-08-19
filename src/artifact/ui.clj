@@ -149,37 +149,45 @@ game."
     (map selection selections)]))
 
 (defn- cell-class [type open]
-  (str "cell " type " " (if open "open" "")))
+  (str "cell " type " " (if open "" "closed")))
 
 (defn- resource-class [resource]
   (str "resource " (if resource resource "resource-not-set")))
 
-(defn- cell [id type open resource]
+(defn- cell [id resource open]
   [:div {:class (cell-class type open) :id (str "cell-" id)}
    [:div {:class (resource-class resource)} ""]
    [:div {:class "research-assistant no-player"} ""]])
 
-(def cell-descriptions
-  [[1  "doctoral" true "scholastic"]
-   [2  "doctoral" true "field-research"]
-   [3  "doctoral" false nil]
-   [4  "doctoral" false nil]
-   [5  "doctoral" false nil]
-   [6  "doctoral" false nil]
-   [7  "doctoral" false "site-support"]
-   [8  "tenured" false nil]
-   [9  "tenured" false nil]
-   [10 "tenured" false nil]
-   [11 "tenured" false nil]
-   [12 "tenured" false nil]
-   [13 "tenured" false nil]
-   [14 "tenured" false "dig-permit"]
-   [15 "arcane" false nil]
-   [16 "arcane" false nil]
-   [17 "arcane" false nil]
-   [18 "arcane" false "eldritch-research"]
-   [19 "arcane" false nil]
-   [20 "arcane" false nil]])
+(defn- zone [zone-description]
+  (let [{:keys [type title cells]} zone-description]
+    [:div {:class type}
+     [:span {:class "zone-title"} title]
+     (map
+      (fn [id [open resource]] (cell (str type "-" id) resource open))
+      (iterate inc 1)
+      cells)]))
+
+(def zone-descriptions
+  [{:type "doctoral"
+    :title "Doctoral"
+    :cells (concat
+            [[true "scholastic"]
+             [true "field-research"]]
+            (repeat 4 [false nil])
+            [[false "site-support"]])}
+   {:type "tenured"
+    :title "Tenured"
+    :cells (concat
+            (repeat 6 [false nil])
+            [[false "dig-permit"]])}
+   {:type "arcane"
+    :title "Arcane"
+    :cells (concat
+            (repeat 3 [false nil])
+            [[false "eldritch-research"]]
+            (repeat 2 [false nil]))}])
+
 
 (defn test-page []
   (to-html-str
@@ -189,9 +197,12 @@ game."
      [:title "Test page"]]
     [:body
      [:div {:class "section"}
+      [:h1 "Scorecard"]
+      [:div "Placeholder"]]
+     [:div {:class "section"}
       [:h1 "Major Actions"]
       (map option (partition 3 test-options))]
      [:div {:class "section"}
       [:h1 "Academy Board"]
-      (map #(apply cell %) cell-descriptions)]]]))
+      (map zone zone-descriptions)]]]))
 
