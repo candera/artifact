@@ -1,5 +1,5 @@
 body {
-     background: url("/images/background.jpg") no-repeat scroll 0pt 0pt transparent;
+     background: url("/images/background-800.jpg") no-repeat scroll 0pt 0pt transparent;
 }
 
 div {
@@ -78,20 +78,21 @@ div {
 
 .section {
      background: none repeat scroll 0pt 0pt rgba(255, 255, 200, 0.85);
-     width: 1002px;
+     width: 782px;
 }
 
 .option {
      border: 2px solid black;
      display: inline;
      float: left;
-     height: 119px;
+     height: 100px;
      padding-bottom: 2px;
-     width: 132px;
+     width: 100px;
 }
 
 .selection {
      display: block;
+     float: left;
 }
 
 .selection-box {
@@ -113,12 +114,13 @@ div {
 .selection-text {
      font-size: 14px;
      vertical-align: middle;
+     display: block;
 }
 
 h2 {
      background: none repeat scroll 0pt 0pt yellow;
      color: #666666;
-     font-size: medium;
+     font-size: small;
      margin: 0pt;
      text-align: center;
      width: 100%;

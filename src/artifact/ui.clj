@@ -114,27 +114,27 @@ game."
 
    "Submit Grant"
    "Submit a research grant to receive more funding"
-   ["$5" "$3" "Roll ($1-6)"]
+   ["$5" "$3" "die"]
 
    "Dig"
    "Trade in Resource Points to pull cards from the Dig Site"
-   ["Artifact Card" "Artifact Card"]
+   ["" ""]
 
    "Teach"
    ""
-   ["Collect 1 RA" "Collect 1 RA"]
+   ["" ""]
 
    "Scheme"
    ""
-   ["Scheme" "Scheme"]
+   ["" ""]
 
    "Explore"
    ""
-   ["Explore" "Explore"]
+   ["" ""]
 
    "Publish"
    ""
-   ["Publish" "Publish"]])
+   ["" ""]])
 
 (defn- selection [selection-text]
    [:div {:class "selection"}
@@ -142,11 +142,10 @@ game."
      [:div {:class "selection-area"} ""]]
     [:span {:class "selection-text"} selection-text]])
 
-(defn- option [option]
-  (let [[title description selections] option]
-   [:div {:class "option"}
-    [:h2 title]
-    (map selection selections)]))
+(defn- option [title description selections]
+  [:div {:class "option"}
+   [:h2 title]
+   (map selection selections)])
 
 (defn- cell-class [type open]
   (str "cell " type " " (if open "" "closed")))
@@ -201,8 +200,9 @@ game."
       [:div "Placeholder"]]
      [:div {:class "section"}
       [:h1 "Major Actions"]
-      (map option (partition 3 test-options))]
+      (map #(apply option %) (partition 3 test-options))]
      [:div {:class "section"}
       [:h1 "Academy Board"]
-      (map zone zone-descriptions)]]]))
+      (map zone zone-descriptions)
+      (option "Explore" "" (repeat 3 "Explore"))]]]))
 
