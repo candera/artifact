@@ -23,8 +23,8 @@
   [clause]
   (if (seq? clause)
     (case (first clause)
-          'app-catch :app-catch
-          'catch :catch
+          app-catch :app-catch
+          catch :catch
           :other)
     :other))
 
