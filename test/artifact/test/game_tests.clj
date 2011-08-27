@@ -88,6 +88,10 @@ action available. "
   [game id2] (add-player game "Two")
   [game id3] (add-player game "Three")
   [game id4] (add-player game "Four")
+  ;; TODO: These tests are failing right now because the icon
+  ;; attribute is on the professor entity, not the player one. But it
+  ;; doesn't make much sense to fix it, since all this is going to
+  ;; change pretty radically once the new UI is in place.
   _ (are [icon id]
          (= [icon] (query-values game [:any id "icon" :any]))
          "/images/professor-blue.png" id1
