@@ -61,7 +61,6 @@ game."
          [:title "Artifact (Pre-Alpha)"]
          [:link {:rel "stylesheet" :type "text/css" :href "/styles/game.css"}]
          [:link {:rel "stylesheet" :type "text/css" :href "/styles/sunny/jquery-ui-1.8.13.custom.css"}]
-
          ;; JQuery and related plugins
          ;; Empty string in script tag is to get the closing tag to
          ;; show up, since the validator complains otherwise.
@@ -142,10 +141,13 @@ game."
      [:div {:class "selection-area"} ""]]
     [:span {:class "selection-text"} selection-text]])
 
-(defn- option [title description selections]
-  [:div {:class "option"}
-   [:h2 title]
-   (map selection selections)])
+(defn- option
+  ([title description selections]
+     (option title description selections {}))
+  ([title description selections extra-attrs]
+   [:div (merge {:class "option"} extra-attrs)
+    [:h2 title]
+    (map selection selections)]))
 
 (defn- cell-class [type open]
   (str "cell " type " " (if open "" "closed")))
@@ -156,7 +158,11 @@ game."
 (defn- cell [id resource open]
   [:div {:class (cell-class type open) :id (str "cell-" id)}
    [:div {:class (resource-class resource)} ""]
-   [:div {:class "research-assistant no-player"} ""]])
+   [:div {:class "research-assistants"}
+    [:div {:class "research-assistant no-player player1"} ""]
+    [:div {:class "research-assistant no-player player2"} ""]
+    [:div {:class "research-assistant no-player player3"} ""]
+    [:div {:class "research-assistant no-player player4"} ""]]])
 
 (defn- zone [zone-description]
   (let [{:keys [type title cells]} zone-description]
@@ -187,6 +193,18 @@ game."
             [[false "eldritch-research"]]
             (repeat 2 [false nil]))}])
 
+(def ^{:private true} ready-states
+  [{:type "incapcitated"
+    :title "Incapcitated"}
+   {:type "healing"
+    :title "Healing"}
+   {:type "ready"
+    :title "Ready"}])
+
+(defn- ready-state [ready-state-description]
+  (let [{:keys [type title]} ready-state-description]
+      [:div {:class "ready-state"}
+       [:h2 title] "Zero"]))
 
 (defn test-page []
   (to-html-str
@@ -203,6 +221,8 @@ game."
       (map #(apply option %) (partition 3 test-options))]
      [:div {:class "section"}
       [:h1 "Academy Board"]
-      (map zone zone-descriptions)
-      (option "Explore" "" (repeat 3 "Explore"))]]]))
+      [:div {:id "zones"} (map zone zone-descriptions)]
+      (option "Explore" "" (repeat 3 "") {:id "researcher-explore"})
+      [:div {:id "ready-bar"}
+       (interpose [:div {:class "ready-state-arrow"} ""] (map ready-state ready-states))]]]]))
 

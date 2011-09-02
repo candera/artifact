@@ -47,7 +47,7 @@ div {
      background-color: rgba(255, 255, 255, 0.75);
      border: 2px solid black;
      float: left;
-     height: 106px;
+     height: 96px;
      padding-bottom: 2px;
      width: 40px;
 }
@@ -83,11 +83,11 @@ div {
 
 .option {
      border: 2px solid black;
-     display: inline;
-     float: left;
+     display: inline-block;
      height: 100px;
      padding-bottom: 2px;
      width: 100px;
+     margin: 2px;
 }
 
 .selection {
@@ -132,4 +132,44 @@ h1 {
      font-size: large;
      margin: 4px;
      padding: 0px 2px;
+}
+
+
+#zones {
+     display: inline-block;
+     vertical-align: top;
+    float: left;
+}
+
+.ready-state {
+     border: 2px solid black;
+     display: block;
+}
+
+#ready-bar {
+     display: inline-block;
+}
+
+
+#researcher-explore {
+    display: block;
+}
+
+
+.ready-state-arrow {    
+    border-color: black transparent transparent transparent;
+    border-style: solid;
+    border-width: 20px;
+    width: 0;
+    height: 0;
+    margin: auto;
+    margin-bottom: -20px;
+}
+
+.research-assistants {
+    margin-left: 5px;
+}
+
+.research-assistant {
+    display: inline-block;
 }
