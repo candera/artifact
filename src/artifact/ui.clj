@@ -204,7 +204,11 @@ game."
 (defn- ready-state [ready-state-description]
   (let [{:keys [type title]} ready-state-description]
       [:div {:class "ready-state"}
-       [:h2 title] "Zero"]))
+       [:h2 title]
+       [:div {:class "research-assistant player1"} "1"]
+       [:div {:class "research-assistant player2"} "2"]
+       [:div {:class "research-assistant player3"} "3"]
+       [:div {:class "research-assistant player4"} "4"]]))
 
 (defn test-page []
   (to-html-str

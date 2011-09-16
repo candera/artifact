@@ -9,6 +9,7 @@ div {
 
 .zone-title {
     -moz-transform: rotate(270deg)  translate(-70px,0px);
+    -webkit-transform: rotate(270deg)  translate(-70px,0px);
     float: left;
     width: 20px;
 }
@@ -62,7 +63,27 @@ div {
      height: 16px;
      margin: 2px auto auto;
      width: 10px;
+     overflow: visible;
+     font-size: 90%;
+     color: white;
 }
+
+.research-assistant.player1 {
+    background: blue;
+}
+
+.research-assistant.player2 {
+    background: red;
+}
+
+.research-assistant.player3 {
+    background: green;
+}
+
+.research-assistant.player4 {
+    background: purple;
+}
+
 
 .closed > .research-assistant {
   border: 0px
