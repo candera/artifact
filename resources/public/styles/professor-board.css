@@ -1,0 +1,17 @@
+ol
+{
+    list-style-type: none;
+}
+
+li
+{
+    display: inline;
+}
+a
+{
+    height: 100px;
+    width: 100px;
+    text-decoration: none;
+    background-color: aqua;
+    border: 5px solid blue;
+}
