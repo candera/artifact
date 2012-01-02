@@ -5,3 +5,4 @@ classes
 *~
 /.lein-failures
 wiki
+/.lein-deps-sum
