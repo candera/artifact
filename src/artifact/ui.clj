@@ -9,7 +9,7 @@
         artifact.state
         artifact.error
         artifact.logging)
-  (:require [net.cgrand.enlive-html :as enlive])
+  (:require [net.cgrand.enlive-html :as html])
   (:refer-clojure :exclude [time]))
 
 ;;; Helpers
@@ -106,7 +106,7 @@ game."
               (debug "Error when" player-name "tried to join game:" e)
               (index (get error-messages e "Unrecognized error")))))
 
-(enlive/deftemplate professor-board-template "html/professor-board.html" [] identity)
+(html/deftemplate professor-board-template "html/professor-board.html" [] identity)
 
 (defn professor-board-page []
   (apply str (professor-board-template)))
