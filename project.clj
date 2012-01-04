@@ -1,11 +1,15 @@
-
 (defproject artifact "0.1.0-SNAPSHOT"
   :description "The server side of the game Artifact, an archaeology-themed board game. To run it, fire up the server and connect to it with a browser."
-  :dependencies [[org.clojure/clojure "1.2.0"]
-                 [ring/ring-jetty-adapter "0.3.11"]
+  :dependencies [;; Unfortunately, 1.3.0 doesn't work. Something,
+                 ;; somewhere, is still using clojure.contrib, and
+                 ;; it's binding something that isn't declared
+                 ;; dynamic. I think it's something in swank-clojure,
+                 ;; but I'm not sure.
+                 [org.clojure/clojure "1.2.1"]
+                 [ring/ring-jetty-adapter "1.0.1"]
                  [ring-json-params "0.1.3"]
-                 [ring/ring-core "0.3.11"]
-                 [compojure "0.6.5"]
+                 [ring/ring-core "1.0.1"]
+                 [compojure "1.0.0"]
                  [enlive "1.0.0"]]
   :dev-dependencies [[swank-clojure "1.4.0-SNAPSHOT"]]
   :main artifact.core
