@@ -106,8 +106,8 @@ game."
               (debug "Error when" player-name "tried to join game:" e)
               (index (get error-messages e "Unrecognized error")))))
 
-(html/deftemplate professor-board-template "html/professor-board.html" [] identity)
+(html/defsnippet professor-board "html/professor-board.html" [:html] [])
 
 (defn professor-board-page []
-  (apply str (professor-board-template)))
+  (apply str (html/emit* (professor-board))))
 

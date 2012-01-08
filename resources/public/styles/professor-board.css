@@ -1,23 +1,23 @@
-ol
-{
+ol {
     list-style-type: none;
 }
-
-li
-{
+li {
     display: inline;
 }
-
-a
-{
+a {
+    border: 1px solid blue;
     height: 100px;
-    width: 100px;
     text-decoration: none;
-    background-color: aqua;
-    border: 5px solid blue;
+    width: 100px;
 }
-
-div.professor-action > h2
-{
+div.professor-action > h2 {
     display: inline-block;
+    font-size: 21px;
+    width: 85px;
+}
+body {
+    width: 480px;
+    border:  1px solid red;
+    height: 960px;
+    font-size: 140%;
 }
