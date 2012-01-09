@@ -6,9 +6,11 @@ li {
 }
 a {
     border: 1px solid blue;
-    height: 100px;
+    display: inline-block;
+    height: 25px;
+    min-width: 25px;
     text-decoration: none;
-    width: 100px;
+
 }
 div.professor-action > h2 {
     display: inline-block;
