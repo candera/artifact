@@ -29,7 +29,8 @@
 
 (defroutes test-routes
   (POST "/test" [token] "test")
-  (GET "/professor-board" [] (professor-board-page)))
+  ;;(GET "/professor-board" [] (professor-board-page))
+  )
 
 (defroutes page-routes
   (GET "/" [] (to-html-str (index)))

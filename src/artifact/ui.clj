@@ -35,7 +35,14 @@ game."
     (doseq [e content] (prxml e))
     (.toString *out*)))
 
+;;; Snippets
+
+(html/defsnippet professor-board "html/professor-board.html" [:html] [])
+
 ;;; Endpoints
+
+(defn game-page [token]
+  (apply str (html/emit* (professor-board))))
 
 (defn index [& messages]
   [:html
@@ -50,47 +57,48 @@ game."
      [:input {:type "text" :name "name"}]
      [:input {:type "submit" :value "Join"}]]]])
 
-(defn game-page [token]
-  (dosync
-   (let [player-id (lookup-player @*game* token)
-         player-name (lookup-player-name @*game* player-id)]
-     (response
-      (to-html-str
-       [:doctype! "html"]
-       [:html
-        [:head
-         [:title "Artifact (Pre-Alpha)"]
-         [:link {:rel "stylesheet" :type "text/css" :href "/styles/game.css"}]
-         [:link {:rel "stylesheet" :type "text/css" :href "/styles/sunny/jquery-ui-1.8.13.custom.css"}]
+(comment
+  (defn game-page [token]
+    (dosync
+     (let [player-id (lookup-player @*game* token)
+           player-name (lookup-player-name @*game* player-id)]
+       (response
+        (to-html-str
+         [:doctype! "html"]
+         [:html
+          [:head
+           [:title "Artifact (Pre-Alpha)"]
+           [:link {:rel "stylesheet" :type "text/css" :href "/styles/game.css"}]
+           [:link {:rel "stylesheet" :type "text/css" :href "/styles/sunny/jquery-ui-1.8.13.custom.css"}]
 
-         ;; JQuery and related plugins
-         ;; Empty string in script tag is to get the closing tag to
-         ;; show up, since the validator complains otherwise.
-         [:script {:src "/script/jquery.min-1.5.1.js"} ""]
-         [:script {:src "/script/jquery.timers-1.2.js"} ""]
-         [:script {:src "/script/jquery-ui-1.8.13.custom.min.js"} ""]
+           ;; JQuery and related plugins
+           ;; Empty string in script tag is to get the closing tag to
+           ;; show up, since the validator complains otherwise.
+           [:script {:src "/script/jquery.min-1.5.1.js"} ""]
+           [:script {:src "/script/jquery.timers-1.2.js"} ""]
+           [:script {:src "/script/jquery-ui-1.8.13.custom.min.js"} ""]
 
-         [:script
-          ;; URL for retrieving game state
-          [:raw! (str "var gameStateUrl='" (state-url token) "';")]]
-         [:script {:src "/script/game.js"} ""]]
-        [:body
-         [:div {:id "setup-ui"}
-          [:button {:id "start-game"
-                    :onclick "javascript:startGame()"
-                    :disabled "disabled"}
-           "Start game!"]
-          [:table {:id "joined-players"}
-           [:tr [:th "Player"] [:th "State"]] ""]]
-         [:div {:id "playing-ui"}
-          [:div {:id "playing-tabs"}
-           [:ul
-            [:li [:a {:href "#ma-board"} "Major Action Board"]]
-            [:li [:a {:href "#academy-board"} "Academy Board"]]]
-           [:div {:id "ma-board"} ""]
-           [:div {:id "academy-board"} ""]]]
-         [:textarea {:id "gameState" :readonly "readonly" :rows 20}
-          "diagnostic information is displayed here"]]])))))
+           [:script
+            ;; URL for retrieving game state
+            [:raw! (str "var gameStateUrl='" (state-url token) "';")]]
+           [:script {:src "/script/game.js"} ""]]
+          [:body
+           [:div {:id "setup-ui"}
+            [:button {:id "start-game"
+                      :onclick "javascript:startGame()"
+                      :disabled "disabled"}
+             "Start game!"]
+            [:table {:id "joined-players"}
+             [:tr [:th "Player"] [:th "State"]] ""]]
+           [:div {:id "playing-ui"}
+            [:div {:id "playing-tabs"}
+             [:ul
+              [:li [:a {:href "#ma-board"} "Major Action Board"]]
+              [:li [:a {:href "#academy-board"} "Academy Board"]]]
+             [:div {:id "ma-board"} ""]
+             [:div {:id "academy-board"} ""]]]
+           [:textarea {:id "gameState" :readonly "readonly" :rows 20}
+            "diagnostic information is displayed here"]]]))))))
 
 (def ^{:private true} error-messages
   {:artifact.game/cannot-add-more-players "The game is already full."})
@@ -106,8 +114,4 @@ game."
               (debug "Error when" player-name "tried to join game:" e)
               (index (get error-messages e "Unrecognized error")))))
 
-(html/defsnippet professor-board "html/professor-board.html" [:html] [])
-
-(defn professor-board-page []
-  (apply str (html/emit* (professor-board))))
 
