@@ -33,7 +33,7 @@
   )
 
 (defroutes page-routes
-  (GET "/" [] (to-html-str (index)))
+  (GET "/" [] (index))
   (POST "/join" [name] (join-page name))
   (GET "/game/:token" [token] (game-page token)))
 

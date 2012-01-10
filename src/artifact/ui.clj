@@ -37,25 +37,15 @@ game."
 
 ;;; Snippets
 
-(html/defsnippet professor-board "html/professor-board.html" [:html] [])
+(html/defsnippet flash (html/html-resource "html/snippets.html") [:p.flash]
+  [message]
+  (html/content message))
 
 ;;; Endpoints
 
+;; TODO: Deal with the token
 (defn game-page [token]
-  (apply str (html/emit* (professor-board))))
-
-(defn index [& messages]
-  [:html
-   [:head
-    [:title "Artifact (Pre-Alpha)"]]
-   [:body {:onload "document.join.name.focus()"}
-    [:p "Welcome to artifact! Actual functionality still under development."]
-    (map (fn [m] [:p {:class "flash"} m]) messages)
-    [:p "Join a game by entering your name here."]
-    [:form {:action "/join" :method "post" :name "join"}
-     "Name:"
-     [:input {:type "text" :name "name"}]
-     [:input {:type "submit" :value "Join"}]]]])
+  (apply str (html/emit* (html/html-resource "html/professor-board.html"))))
 
 (comment
   (defn game-page [token]
@@ -99,6 +89,11 @@ game."
              [:div {:id "academy-board"} ""]]]
            [:textarea {:id "gameState" :readonly "readonly" :rows 20}
             "diagnostic information is displayed here"]]]))))))
+
+(defn index [& messages]
+  (let [h1 (html/html-resource "html/index.html")
+        h2 (html/at h1 [:div#messages] (fn [_] (mapcat flash messages)))]
+    (apply str (html/emit* h2))))
 
 (def ^{:private true} error-messages
   {:artifact.game/cannot-add-more-players "The game is already full."})
