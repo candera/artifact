@@ -4,7 +4,7 @@
         [ring.middleware.multipart-params]
         [artifact.game :only (new-game)]
         [artifact.state :only (*game*)]
-        [clojure.contrib.json :only (read-json)]
+        [clojure.data.json :only (read-json)]
         compojure.core
         artifact.ui
         artifact.api

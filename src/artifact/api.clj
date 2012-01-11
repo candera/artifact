@@ -1,6 +1,6 @@
 (ns artifact.api
   "Defines the JSON API used by clients to retrieve game state."
-  (:use [clojure.contrib.json :only [json-str read-json]]
+  (:use [clojure.data.json :only [json-str read-json]]
         artifact.tuplestore
         artifact.state
         artifact.game

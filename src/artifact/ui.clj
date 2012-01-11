@@ -1,7 +1,6 @@
 (ns artifact.ui
   "Contains the HTML-y bits of the game."
-  (:use [clojure.contrib.prxml :only (prxml *prxml-indent* *html-compatible*)]
-        [clojure.contrib.json :only (json-str)]
+  (:use [clojure.data.json :only (json-str)]
         [ring.util.response :only (response)]
         compojure.core
         artifact.tuplestore
@@ -27,13 +26,6 @@
   "Retrieve the URL that the client can use to get the state of the
 game."
   ([token] (str "/api?token=" token)))
-
-(defn to-html-str [& content]
-  (binding [*prxml-indent* 2
-            *html-compatible* true
-            *out* (java.io.StringWriter.)]
-    (doseq [e content] (prxml e))
-    (.toString *out*)))
 
 ;;; Snippets
 

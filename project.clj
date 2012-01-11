@@ -5,13 +5,12 @@
                  ;; it's binding something that isn't declared
                  ;; dynamic. I think it's something in swank-clojure,
                  ;; but I'm not sure.
-                 [org.clojure/clojure "1.2.1"]
+                 [org.clojure/clojure "1.3.0"]
                  [ring/ring-jetty-adapter "1.0.1"]
-                 [ring-json-params "0.1.3"]
                  [ring/ring-core "1.0.1"]
+                 [org.clojure/data.json "0.1.1"]
                  [compojure "1.0.0"]
                  [enlive "1.0.0"]]
-  :dev-dependencies [[swank-clojure "1.4.0-SNAPSHOT"]]
   :main artifact.core
   ;; This next option has to do with Clojure bug #322. Something
   ;; about transitive AOT results in not enough going into the
