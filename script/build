@@ -1,0 +1,24 @@
+#!/bin/bash
+
+set -e
+
+cd `dirname $0`/..
+
+mkdir -p out
+
+echo "Creating out/public..."
+cp -a public out/
+rm out/public/index.html
+rm out/public/design.html
+rm -rf out/public/javascripts/*
+
+source script/setup_classpath.sh
+
+echo "Create advanced compiled JavaScript..."
+java -server -cp $CLJSC_CP jline.ConsoleRunner clojure.main -e \
+"(use 'one.tools)
+ (use 'one.sample.config)
+ (build-project config)"
+
+echo "[build complete]"
+

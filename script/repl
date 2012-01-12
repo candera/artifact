@@ -1,0 +1,7 @@
+#!/bin/bash
+
+cd `dirname $0`/..
+
+source script/setup_classpath.sh
+
+java -server -cp $CLJSC_CP jline.ConsoleRunner clojure.main
