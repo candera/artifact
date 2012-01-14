@@ -10,9 +10,20 @@
                  [enlive "1.0.0"]]
   :dev-dependencies [[jline "0.9.94"]
                      [marginalia "0.7.0-SNAPSHOT"]
-                     [lein-marginalia "0.7.0-SNAPSHOT"]]
+                     [lein-marginalia "0.7.0-SNAPSHOT"]
+                     [robert/hooke "1.1.2"]]
+  :git-dependencies [["todo"]]
+  :hooks [leiningen.hooks.git-deps]
   :main artifact.core
-  ;; This next option has to do with Clojure bug #322. Something
-  ;; about transitive AOT results in not enough going into the
-  ;; uberjar, which means it won't run.
-  :source-path "src/app/clj")
+  :extra-classpath-dirs ["lib/clojurescript/src/clj"
+                         "lib/clojurescript/src/cljs"
+                         "lib/clojurescript/test/cljs"
+                         "lib/domina/src/cljs"
+                         "lib/one/src/app/clj"
+                         "lib/one/src/app/cljs"
+                         "lib/one/src/app/cljs-macros"
+                         "lib/one/src/lib/clj"
+                         "lib/one/src/lib/cljs"
+                         "lib/one/test"
+                         "lib/one/templates"])
+
