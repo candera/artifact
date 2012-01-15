@@ -12,18 +12,20 @@
                      [marginalia "0.7.0-SNAPSHOT"]
                      [lein-marginalia "0.7.0-SNAPSHOT"]
                      [robert/hooke "1.1.2"]]
-  :git-dependencies [["todo"]]
+  :git-dependencies [["https://github.com/brentonashworth/one.git"]
+                     ["https://github.com/levand/domina.git"]
+                     ["https://github.com/clojure/clojurescript.git"]]
   :hooks [leiningen.hooks.git-deps]
   :main artifact.core
-  :extra-classpath-dirs ["lib/clojurescript/src/clj"
-                         "lib/clojurescript/src/cljs"
-                         "lib/clojurescript/test/cljs"
-                         "lib/domina/src/cljs"
-                         "lib/one/src/app/clj"
-                         "lib/one/src/app/cljs"
-                         "lib/one/src/app/cljs-macros"
-                         "lib/one/src/lib/clj"
-                         "lib/one/src/lib/cljs"
-                         "lib/one/test"
-                         "lib/one/templates"])
+  :extra-classpath-dirs [".lein-git-deps/clojurescript/src/clj"
+                         ".lein-git-deps/clojurescript/src/cljs"
+                         ".lein-git-deps/clojurescript/test/cljs"
+                         ".lein-git-deps/domina/src/cljs"
+                         ".lein-git-deps/one/src/app/clj"
+                         ".lein-git-deps/one/src/app/cljs"
+                         ".lein-git-deps/one/src/app/cljs-macros"
+                         ".lein-git-deps/one/src/lib/clj"
+                         ".lein-git-deps/one/src/lib/cljs"
+                         ".lein-git-deps/one/test"
+                         ".lein-git-deps/one/templates"])
 
