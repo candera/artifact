@@ -1,4 +1,4 @@
-(ns leinigen.git-deps)
+(ns leiningen.git-deps)
 
 (defn git-deps
   "A leiningen task that will pull dependencies in via git.
