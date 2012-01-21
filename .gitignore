@@ -7,3 +7,4 @@
 /wiki
 /.lein-deps-sum
 /.repl
+/.lein-git-deps
