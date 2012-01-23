@@ -17,13 +17,11 @@
                  [clj-stacktrace "0.2.4"]]
   :dev-dependencies [[jline "0.9.94"]
                      [marginalia "0.7.0-SNAPSHOT"]
-                     [lein-marginalia "0.7.0-SNAPSHOT"]
-                     [robert/hooke "1.1.2"]]
+                     [lein-marginalia "0.7.0-SNAPSHOT"]]
   :git-dependencies [["https://github.com/brentonashworth/one.git"
                       "M002"]
                      ["https://github.com/levand/domina.git"
                       "c0eb06f677e0f9f72537682e3c702dd27b03e2e4"]]
-  :hooks [leiningen.hooks.git-deps]
   :main artifact.core
   :extra-classpath-dirs [".lein-git-deps/domina/src/cljs"
                          ".lein-git-deps/one/src/lib/clj"
