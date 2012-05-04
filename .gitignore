@@ -8,3 +8,5 @@
 /.lein-deps-sum
 /.repl
 /.lein-git-deps
+/target
+/.lein-plugins
